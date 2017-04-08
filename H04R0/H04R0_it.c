@@ -63,6 +63,15 @@ void SysTick_Handler(void)
 
 }
 
+/**
+* @brief This function handles Hard Fault error callback.
+*/
+void HardFault_Handler(void)
+{
+	/* Loop here */
+	for(;;) {};  
+}
+
 /******************************************************************************/
 /* STM32F0xx Peripheral Interrupt Handlers                                    */
 /* Add here the Interrupt Handlers for the used peripherals.                  */
@@ -207,6 +216,14 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	xSemaphoreGiveFromISR( PxTxSemaphoreHandle[GetPort(huart)], &( xHigherPriorityTaskWoken ) );
 	
 	UartTxReady = SET;
+}
+
+/*-----------------------------------------------------------*/
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	/* Loop here */
+	for(;;) {}; 
 }
 
 /*-----------------------------------------------------------*/
