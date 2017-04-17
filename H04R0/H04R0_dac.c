@@ -37,11 +37,16 @@
     All rights reserved
 */
 
+
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 
-
 DAC_HandleTypeDef hdac;
+TIM_HandleTypeDef htim6;	/* DAC update timer */
+DMA_HandleTypeDef hdma_dac_ch1;
+
+//static __IO uint16_t TIM6ARRValue = 1088;		// Need to check this value! Taken from ST EVAL
+
 
 /* DAC init function */
 void MX_DAC_Init(void)
@@ -53,16 +58,17 @@ void MX_DAC_Init(void)
   HAL_DAC_Init(&hdac);
 
   /* DAC channel OUT1 config */
-  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
-  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+  sConfig.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
   HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1);
+
 
 }
 
 void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
 {
-
   GPIO_InitTypeDef GPIO_InitStruct;
+	TIM_MasterConfigTypeDef sMasterConfig;
 	
   if(hdac->Instance==DAC)
   {
@@ -76,6 +82,41 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(_DAC_PORT, &GPIO_InitStruct);
+		
+		/* Timer 6 clock enable */
+		__TIM6_CLK_ENABLE();
+		
+		/* Timer 6 configuration */
+		htim6.Instance = TIM6;
+		htim6.Init.Prescaler = 0;
+		htim6.Init.CounterMode = TIM_COUNTERMODE_DOWN;
+		htim6.Init.Period = 0;
+		HAL_TIM_Base_Init(&htim6);
+
+		sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+		sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+		HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig);
+	
+	  /* Start timer 6 */
+    HAL_TIM_Base_Start(&htim6);
+		
+    /* DAC DMA 1 Ch 3 init*/
+    hdma_dac_ch1.Instance = DMA1_Channel3;
+    hdma_dac_ch1.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_dac_ch1.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_dac_ch1.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_dac_ch1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_dac_ch1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hdma_dac_ch1.Init.Mode = DMA_NORMAL;
+    hdma_dac_ch1.Init.Priority = DMA_PRIORITY_LOW;
+    HAL_DMA_Init(&hdma_dac_ch1);
+
+    __HAL_DMA1_REMAP(HAL_DMA1_CH3_DAC_CH1);
+
+    __HAL_LINKDMA(hdac,DMA_Handle1,hdma_dac_ch1);
+		
+		/* DMA1_Channel3 is laready enabled */
+		
   }
 }
 

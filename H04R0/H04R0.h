@@ -70,6 +70,8 @@
 #define	_DAC_PIN				GPIO_PIN_4
 #define	_DAC_PORT				GPIOA
 
+#define MusicNotesNumOfSamples	255
+
 /* H01R0_Status Type Definition */  
 typedef enum 
 {
@@ -81,6 +83,11 @@ typedef enum
 #define _IND_LED_PORT		GPIOB
 #define _IND_LED_PIN		GPIO_PIN_14
 
+/* Exported variables */
+extern const float notesFreq[12][9];
+
+/* Macros for musical notes */
+#define C4(t)		PlaySine(notesFreq[0][5], MusicNotesNumOfSamples, t)	
 
 /* Export UART variables */
 extern UART_HandleTypeDef huart1;
@@ -88,6 +95,7 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart5;
+
 
 
 /* Define UART Init prototypes */
@@ -115,7 +123,7 @@ extern void MX_USART5_UART_Init(void);
 
 extern void H04R0_Init(void);
 extern H04R0_Status H04R0_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst);
-
+extern void PlaySine(float freq, uint8_t NumOfSamples, uint32_t length);
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|

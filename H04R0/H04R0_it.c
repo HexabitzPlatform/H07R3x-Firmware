@@ -171,14 +171,9 @@ void DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler(void)
 	/* Messaging DMA 3 */
 	if (HAL_DMA_GET_IT_SOURCE(DMA2,DMA_ISR_TCIF2) == SET) {
 		HAL_DMA_IRQHandler(&portMemDMA3);
-	/* Streaming DMA 2 */
+	/* DAC Ch1 DMA */
 	} else if (HAL_DMA_GET_IT_SOURCE(DMA1,DMA_ISR_TCIF3) == SET) {
-		HAL_DMA_IRQHandler(&portPortDMA2);
-		if (DMAStream2total)
-			++DMAStream2count;
-		if (DMAStream2count >= DMAStream2total) {
-			StopPortPortDMA2();
-		}
+		HAL_DMA_IRQHandler(hdac.DMA_Handle1);
 	}
 }
 
@@ -195,7 +190,7 @@ void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void)
 	/* Messaging DMA 2 */
 	} else if (HAL_DMA_GET_IT_SOURCE(DMA1,DMA_ISR_TCIF6) == SET) {
 		HAL_DMA_IRQHandler(&portMemDMA2);
-	/* Streaming DMA 3 */
+	/* Streaming DMA 2 */
 	} else if (HAL_DMA_GET_IT_SOURCE(DMA2,DMA_ISR_TCIF3) == SET) {
 		HAL_DMA_IRQHandler(&portPortDMA3);
 		if (DMAStream3total)

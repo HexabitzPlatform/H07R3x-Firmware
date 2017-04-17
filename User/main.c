@@ -96,7 +96,9 @@ void FrontEndTask(void * argument)
   /* Infinite loop */
   for(;;)
   {
-
+		C4(1);
+		
+		Delay_ms(1000);
   }	
 
 }

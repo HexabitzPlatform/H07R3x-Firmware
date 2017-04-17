@@ -9,8 +9,12 @@
 		Required MCU resources : 
 		
 			>> USARTs 1,2,3,4,5 for module ports.
+			>> DMA1 Ch5, DMA1 Ch6, DMA2 Ch2 for port-to-memory messaging.
+			>> DMA1 Ch1, DMA2 Ch3 for port-to-port streaming.
 			>> DAC_OUT 1 for TS4990IST.
+			>> DMA1 Ch3 for DAC Ch 1 DMA.
 			>> PB0 for TS4990IST STDBY.
+			>> Timer 6 for DAC Ch 1 trigger.
 			
 */
 	
@@ -27,6 +31,26 @@ UART_HandleTypeDef huart5;
 
 
 /* Private variables ---------------------------------------------------------*/
+
+/* 10-amplitude-sample sine wave: 1.650, 2.620, 3.219, 3.220, 2.622, 1.653, 0.682, 0.081, 0.079, 0.676 */
+const uint16_t sineDigital[10] = {2048, 3251, 3995, 3996, 3253, 2051, 847, 101, 98, 839};
+
+/* Musical notes: 12 Tone Equal Tempered Scale. Frequency Table based on A4 = 440Hz 
+   (Middle C = C4)
+									Octave Number: 		0				1			 2			 3			4				 5			 6				7				8
+*/
+const float notesFreq[12][9] = {	{16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1046.50, 2093.00, 4186.01},			// c
+																	{17.32,	34.65, 69.30,	138.59,	277.18,	554.37,	1108.73, 2217.46,	4434.92},			// c#
+																	{18.35,	36.71, 73.42,	146.83,	293.66,	587.33,	1174.66, 2349.32,	4698.64},			// D
+																	{19.45,	38.89, 77.78,	155.56,	311.13,	622.25,	1244.51, 2489.02,	4978.03},			// D#
+																	{20.60,	41.20, 82.41,	164.81,	329.63,	659.26,	1318.51, 2637.02,	5274.04},			// E
+																	{21.83,	43.65, 87.31,	174.61,	349.23,	698.46,	1396.91, 2793.83,	5587.65},			// F		
+																	{23.12,	46.25, 92.50,	185.00,	369.99,	739.99,	1479.98, 2959.96,	5919.91},			// F#
+																	{24.50,	49.00, 98.00,	196.00,	392.00,	783.99,	1567.98, 3135.96,	6271.93},			// G
+																	{25.96,	51.91, 103.83, 207.65, 415.30, 830.61, 1661.22,	3322.44, 6644.88},		// G#
+																	{27.50,	55.00, 110.00, 220.00, 440.00, 880.00, 1760.00,	3520.00, 7040.00},		// A
+																	{29.14,	58.27, 116.54, 233.08, 466.16, 932.33, 1864.66,	3729.31, 7458.62},		// A#
+																	{30.87,	61.74, 123.47, 246.94, 493.88, 987.77, 1975.53,	3951.07, 7902.13} };	// B
 
 
 /* Private function prototypes -----------------------------------------------*/	
@@ -94,6 +118,22 @@ void H04R0_Init(void)
 }
 /*-----------------------------------------------------------*/
 
+/* --- Play a pure sine wave. 
+*/
+void PlaySine(float freq, uint8_t NumOfSamples, uint32_t length)
+{
+	/* Timer trigger frequency */
+	uint16_t ftrgo = freq * NumOfSamples;
+
+	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM2 trigger clock) - 1, ARR = TIM2 trigger clock - 1 */
+	HAL_TIM_Base_Stop(&htim6);
+	htim6.Instance->ARR = (uint16_t) (ftrgo-1);
+	htim6.Instance->PSC = (uint16_t) ((SystemCoreClock / ftrgo) - 1);
+	HAL_TIM_Base_Start(&htim6);
+	
+	/* Start the DAC */
+	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)sineDigital, 10, DAC_ALIGN_12B_R); 
+}
 
 /*-----------------------------------------------------------*/
 
