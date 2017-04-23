@@ -22,6 +22,9 @@
 #include "BOS.h"
 
 
+uint32_t NumberOfTuneWaves = 0;
+
+
 /* Define UART variables */
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -130,40 +133,29 @@ void H04R0_Init(void)
 */
 void PlaySine(float freq, uint16_t NumOfSamples, float length)
 {
-	uint32_t i = 0;
-	
 	/* Timer trigger frequency */
 	float ftrg = freq * NumOfSamples;
 	
-	/* Number of waves */
-	float n = length * freq;
+	/* Number of waves */	
+	NumberOfTuneWaves = length * freq;
 	
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM2 trigger clock) - 1, ARR = TIM2 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
 	htim6.Instance->ARR = 1;
 	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / ftrg) / 2) - 1);
+	HAL_TIM_Base_Start(&htim6);
 	
-	for (i=0 ; i<n ; i++) 
-	{
-		HAL_TIM_Base_Start(&htim6);
+	/* Start the DAC DMA */
+	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)sineDigital, NumOfSamples, DAC_ALIGN_12B_R); 
 		
-		/* Start the DAC */
-		HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)sineDigital, NumOfSamples, DAC_ALIGN_12B_R); 
-			
-		
-		/* Wait indefinitly until DMA transfer is finished */
-		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-		
-		//taskYIELD();
-		
-		//Delay_ms(1);
-		
-		/* Reset the timer */
-		HAL_TIM_Base_Stop(&htim6);
-		htim6.Instance->ARR = 1;
+	/* Wait indefinitly until DMA transfer is finished */
+	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+	
+	/* Reset the DAC DMA and trigger timer */
+	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	HAL_TIM_Base_Stop(&htim6);
+	NumberOfTuneWaves = 0;
 
-	}
-	
 }
 
 /*-----------------------------------------------------------*/

@@ -85,9 +85,13 @@ typedef enum
 
 /* Exported variables */
 extern const float notesFreq[12][9];
+extern uint32_t NumberOfTuneWaves;
+
 
 /* Macros for musical notes */
 #define C4(t)		PlaySine(notesFreq[0][5], MusicNotesNumOfSamples, t)	
+
+
 
 /* Export UART variables */
 extern UART_HandleTypeDef huart1;
