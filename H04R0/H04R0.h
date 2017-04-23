@@ -70,7 +70,7 @@
 #define	_DAC_PIN				GPIO_PIN_4
 #define	_DAC_PORT				GPIOA
 
-#define MusicNotesNumOfSamples	10
+#define MusicNotesNumOfSamples	100
 
 /* H01R0_Status Type Definition */  
 typedef enum 
@@ -123,7 +123,7 @@ extern void MX_USART5_UART_Init(void);
 
 extern void H04R0_Init(void);
 extern H04R0_Status H04R0_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst);
-extern void PlaySine(float freq, uint8_t NumOfSamples, uint32_t length);
+extern void PlaySine(float freq, uint16_t NumOfSamples, float length);
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|

@@ -44,6 +44,7 @@
 
 /* External function prototypes ----------------------------------------------*/
 extern xTaskHandle xCommandConsoleTask;
+extern TaskHandle_t FrontEndTaskHandle;
 extern void NotifyMessagingTaskFromISR(uint8_t port);
 
 
@@ -199,6 +200,18 @@ void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void)
 			StopPortPortDMA3();
 		}
 	}
+}
+
+/*-----------------------------------------------------------*/
+
+/**
+  * @brief  Conversion complete callback in non blocking mode for Channel1 
+  */
+void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
+{
+  portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+	
+	vTaskNotifyGiveFromISR(FrontEndTaskHandle, &( xHigherPriorityTaskWoken ) );
 }
 
 /*-----------------------------------------------------------*/

@@ -108,7 +108,7 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
     hdma_dac_ch1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
     hdma_dac_ch1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
     hdma_dac_ch1.Init.Mode = DMA_NORMAL;
-    hdma_dac_ch1.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_dac_ch1.Init.Priority = DMA_PRIORITY_MEDIUM;
     HAL_DMA_Init(&hdma_dac_ch1);
 
     __HAL_DMA1_REMAP(HAL_DMA1_CH3_DAC_CH1);

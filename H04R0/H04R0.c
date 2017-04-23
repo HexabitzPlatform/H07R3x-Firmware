@@ -128,19 +128,41 @@ void H04R0_Init(void)
 
 /* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
 */
-void PlaySine(float freq, uint8_t NumOfSamples, uint32_t length)
+void PlaySine(float freq, uint16_t NumOfSamples, float length)
 {
+	uint32_t i = 0;
+	
 	/* Timer trigger frequency */
-	uint16_t ftrg = freq * NumOfSamples;
-
+	float ftrg = freq * NumOfSamples;
+	
+	/* Number of waves */
+	float n = length * freq;
+	
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM2 trigger clock) - 1, ARR = TIM2 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
 	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t) ((SystemCoreClock / ftrg) - 1);
-	HAL_TIM_Base_Start(&htim6);
+	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / ftrg) / 2) - 1);
 	
-	/* Start the DAC */
-	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)sineDigital, NumOfSamples, DAC_ALIGN_12B_R); 
+	for (i=0 ; i<n ; i++) 
+	{
+		HAL_TIM_Base_Start(&htim6);
+		
+		/* Start the DAC */
+		HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)sineDigital, NumOfSamples, DAC_ALIGN_12B_R); 
+			
+		
+		/* Wait indefinitly until DMA transfer is finished */
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		
+		//taskYIELD();
+		
+		//Delay_ms(1);
+		
+		/* Reset the timer */
+		HAL_TIM_Base_Stop(&htim6);
+		htim6.Instance->ARR = 1;
+
+	}
 	
 }
 
