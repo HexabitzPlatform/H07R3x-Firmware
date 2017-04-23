@@ -70,7 +70,7 @@
 #define	_DAC_PIN				GPIO_PIN_4
 #define	_DAC_PORT				GPIOA
 
-#define MusicNotesNumOfSamples	255
+#define MusicNotesNumOfSamples	10
 
 /* H01R0_Status Type Definition */  
 typedef enum 

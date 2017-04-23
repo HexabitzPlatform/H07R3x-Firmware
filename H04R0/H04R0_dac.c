@@ -59,7 +59,7 @@ void MX_DAC_Init(void)
 
   /* DAC channel OUT1 config */
   sConfig.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
-  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
   HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1);
 
 
@@ -115,7 +115,9 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
 
     __HAL_LINKDMA(hdac,DMA_Handle1,hdma_dac_ch1);
 		
-		/* DMA1_Channel3 is laready enabled */
+		/* DMA interrupt init */
+		HAL_NVIC_SetPriority(DMA1_Ch2_3_DMA2_Ch1_2_IRQn, 1, 0);
+		HAL_NVIC_EnableIRQ(DMA1_Ch2_3_DMA2_Ch1_2_IRQn);
 		
   }
 }

@@ -96,9 +96,16 @@ void FrontEndTask(void * argument)
   /* Infinite loop */
   for(;;)
   {
-		C4(1);
+		//C4(1);
+		for (int i=0;i<1000; i++) {
+			PlaySine(523.25, 100, 1);
+			Delay_ms(1);
+		}
 		
-		Delay_ms(1000);
+		Delay_ms(100);
+		
+
+		
   }	
 
 }

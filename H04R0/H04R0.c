@@ -33,7 +33,15 @@ UART_HandleTypeDef huart5;
 /* Private variables ---------------------------------------------------------*/
 
 /* 10-amplitude-sample sine wave: 1.650, 2.620, 3.219, 3.220, 2.622, 1.653, 0.682, 0.081, 0.079, 0.676 */
-const uint16_t sineDigital[10] = {2048, 3251, 3995, 3996, 3253, 2051, 847, 101, 98, 839};
+//const uint16_t sineDigital[10] = {2048, 3251, 3995, 3996, 3253, 2051, 847, 101, 98, 839};
+
+/* 100 samples sine wave <<http://www.daycounter.com/Calculators/Sine-Generator-Calculator2.phtml>> */
+const uint16_t sineDigital[100] = {2048,2176,2304,2431,2557,2680,2801,2919,3034,3145,3251,3353,3449,3540,3625,3704,3776,3842,3900,3951,
+3995,4031,4059,4079,4091,4095,4091,4079,4059,4031,3995,3951,3900,3842,3776,3704,3625,3540,3449,3353,
+3251,3145,3034,2919,2801,2680,2557,2431,2304,2176,2048,1919,1791,1664,1538,1415,1294,1176,1061,950,
+844,742,646,555,470,391,319,253,195,144,100,64,36,16,4,0,4,16,36,64,
+100,144,195,253,319,391,470,555,646,742,844,950,1061,1176,1294,1415,1538,1664,1791,1919};
+
 
 /* Musical notes: 12 Tone Equal Tempered Scale. Frequency Table based on A4 = 440Hz 
    (Middle C = C4)
@@ -118,21 +126,22 @@ void H04R0_Init(void)
 }
 /*-----------------------------------------------------------*/
 
-/* --- Play a pure sine wave. 
+/* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
 */
 void PlaySine(float freq, uint8_t NumOfSamples, uint32_t length)
 {
 	/* Timer trigger frequency */
-	uint16_t ftrgo = freq * NumOfSamples;
+	uint16_t ftrg = freq * NumOfSamples;
 
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM2 trigger clock) - 1, ARR = TIM2 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
-	htim6.Instance->ARR = (uint16_t) (ftrgo-1);
-	htim6.Instance->PSC = (uint16_t) ((SystemCoreClock / ftrgo) - 1);
+	htim6.Instance->ARR = 1;
+	htim6.Instance->PSC = (uint16_t) ((SystemCoreClock / ftrg) - 1);
 	HAL_TIM_Base_Start(&htim6);
 	
 	/* Start the DAC */
-	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)sineDigital, 10, DAC_ALIGN_12B_R); 
+	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)sineDigital, NumOfSamples, DAC_ALIGN_12B_R); 
+	
 }
 
 /*-----------------------------------------------------------*/
