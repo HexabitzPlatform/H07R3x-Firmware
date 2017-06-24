@@ -129,35 +129,9 @@ const float notesFreq[12][9] = {	{16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1
    ----------------------------------------------------------------------- 
 */
 
-/* --- H04R0 message processing task. 
-*/
-H04R0_Status H04R0_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst)
-{
-	H04R0_Status result = H04R0_OK;
-	
-	switch (code)
-	{
-
-		default:
-			result = H04R0_ERR_UnknownMessage;
-			break;
-	}			
-
-	return result;	
-}
-
-/*-----------------------------------------------------------*/
-
-
-
-/* -----------------------------------------------------------------------
-	|																APIs	 																 	|
-   ----------------------------------------------------------------------- 
-*/
-
 /* --- H04R0 module initialization. 
 */
-void H04R0_Init(void)
+void Module_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
 	
@@ -180,6 +154,48 @@ void H04R0_Init(void)
   
 }
 /*-----------------------------------------------------------*/
+
+/* --- H04R0 message processing task. 
+*/
+Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst)
+{
+	Module_Status result = H04R0_OK;
+	
+	switch (code)
+	{
+
+		default:
+			result = H04R0_ERR_UnknownMessage;
+			break;
+	}			
+
+	return result;	
+}
+
+/*-----------------------------------------------------------*/
+
+/* --- Get the port for a given UART. 
+*/
+uint8_t GetPort(UART_HandleTypeDef *huart)
+{
+	if (huart->Instance == USART4)
+			return P1;
+	else if (huart->Instance == USART2)
+			return P2;
+	else if (huart->Instance == USART3)
+			return P3;
+	else if (huart->Instance == USART1)
+			return P4;
+	else if (huart->Instance == USART5)
+			return P5;
+		
+	return 0;
+}
+
+/* -----------------------------------------------------------------------
+	|																APIs	 																 	|
+   ----------------------------------------------------------------------- 
+*/
 
 /* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
 */
