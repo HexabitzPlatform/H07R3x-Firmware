@@ -239,7 +239,10 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
 	/* Loop here */
-	for(;;) {}; 
+	//for(;;) {};
+	
+	/* Start receiving again */
+	HAL_UART_Receive_IT(huart, (uint8_t *)&cRxedChar, 1);	
 }
 
 /*-----------------------------------------------------------*/
