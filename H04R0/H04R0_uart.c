@@ -43,7 +43,6 @@
 
 FlagStatus UartRxReady = RESET;
 FlagStatus UartTxReady = RESET;
-uint8_t PcPort = 0;
 
 
 /* USART1 init function */
@@ -51,7 +50,7 @@ uint8_t PcPort = 0;
 void MX_USART1_UART_Init(void)
 {
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 921600;
+  huart1.Init.BaudRate = DEF_ARRAY_BAUDRATE;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -59,9 +58,7 @@ void MX_USART1_UART_Init(void)
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   huart1.Init.OneBitSampling = UART_ONEBIT_SAMPLING_DISABLED;
-//  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
-	huart1.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 	HAL_UART_Init(&huart1);
 	#if _P4pol_reversed	
 		huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
@@ -76,7 +73,7 @@ void MX_USART1_UART_Init(void)
 void MX_USART2_UART_Init(void)
 {
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 921600;
+  huart2.Init.BaudRate = DEF_ARRAY_BAUDRATE;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -84,9 +81,7 @@ void MX_USART2_UART_Init(void)
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
   huart2.Init.OneBitSampling = UART_ONEBIT_SAMPLING_DISABLED;
-//  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
-	huart2.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 	HAL_UART_Init(&huart2);
 	#if _P2pol_reversed
 		huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
@@ -101,7 +96,7 @@ void MX_USART2_UART_Init(void)
 void MX_USART3_UART_Init(void)
 {
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 921600;
+  huart3.Init.BaudRate = DEF_ARRAY_BAUDRATE;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
@@ -109,9 +104,7 @@ void MX_USART3_UART_Init(void)
   huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart3.Init.OverSampling = UART_OVERSAMPLING_16;
   huart3.Init.OneBitSampling = UART_ONEBIT_SAMPLING_DISABLED;
-  //huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
-	huart3.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 	HAL_UART_Init(&huart3);
 	#if _P3pol_reversed	
 		huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
@@ -126,7 +119,7 @@ void MX_USART3_UART_Init(void)
 void MX_USART4_UART_Init(void)
 {
   huart4.Instance = USART4;
-  huart4.Init.BaudRate = 921600;
+  huart4.Init.BaudRate = DEF_ARRAY_BAUDRATE;
   huart4.Init.WordLength = UART_WORDLENGTH_8B;
   huart4.Init.StopBits = UART_STOPBITS_1;
   huart4.Init.Parity = UART_PARITY_NONE;
@@ -134,9 +127,7 @@ void MX_USART4_UART_Init(void)
   huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart4.Init.OverSampling = UART_OVERSAMPLING_16;
   huart4.Init.OneBitSampling = UART_ONEBIT_SAMPLING_DISABLED;
-//  huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
-	huart4.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+  huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 	HAL_UART_Init(&huart4);
 	#if _P1pol_reversed	
 		huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
@@ -151,7 +142,7 @@ void MX_USART4_UART_Init(void)
 void MX_USART5_UART_Init(void)
 {
   huart5.Instance = USART5;
-  huart5.Init.BaudRate = 921600;
+  huart5.Init.BaudRate = DEF_ARRAY_BAUDRATE;
   huart5.Init.WordLength = UART_WORDLENGTH_8B;
   huart5.Init.StopBits = UART_STOPBITS_1;
   huart5.Init.Parity = UART_PARITY_NONE;
@@ -159,9 +150,7 @@ void MX_USART5_UART_Init(void)
   huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart5.Init.OverSampling = UART_OVERSAMPLING_16;
   huart5.Init.OneBitSampling = UART_ONEBIT_SAMPLING_DISABLED;
-//  huart5.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	huart5.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
-	huart5.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+  huart5.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 	HAL_UART_Init(&huart5);
 	#if _P5pol_reversed	
 		huart5.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
@@ -176,7 +165,7 @@ void MX_USART5_UART_Init(void)
 void MX_USART6_UART_Init(void)
 {
   huart6.Instance = USART6;
-  huart6.Init.BaudRate = 921600;
+  huart6.Init.BaudRate = DEF_ARRAY_BAUDRATE;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
   huart6.Init.StopBits = UART_STOPBITS_1;
   huart6.Init.Parity = UART_PARITY_NONE;
@@ -184,9 +173,7 @@ void MX_USART6_UART_Init(void)
   huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart6.Init.OverSampling = UART_OVERSAMPLING_16;
   huart6.Init.OneBitSampling = UART_ONEBIT_SAMPLING_DISABLED;
-//  huart6.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	huart6.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
-	huart6.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+  huart6.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 	HAL_UART_Init(&huart6);
 	#if _P6pol_reversed
 		huart6.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
@@ -430,5 +417,17 @@ HAL_StatusTypeDef writePxITMutex(uint8_t port, char *buffer, uint16_t n, uint32_
 	return result;
 }
 
+/* --- Update baudrate for this port --- 
+*/
+BOS_Status UpdateBaudrate(uint8_t port, uint32_t baudrate)
+{
+	BOS_Status result = BOS_OK; 
+	UART_HandleTypeDef *huart = GetUart(port);
+
+	huart->Init.BaudRate = baudrate;
+	HAL_UART_Init(huart);
+	
+	return result;
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
