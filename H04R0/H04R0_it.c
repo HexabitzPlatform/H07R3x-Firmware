@@ -240,6 +240,9 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
 	/* Loop here */
 	//for(;;) {};
+
+  /* Set the UART state ready to be able to start the process again */
+  huart->State = HAL_UART_STATE_READY;
 	
 	/* Start receiving again */
 	HAL_UART_Receive_IT(huart, (uint8_t *)&cRxedChar, 1);	
