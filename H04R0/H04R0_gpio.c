@@ -53,6 +53,7 @@ void MX_GPIO_Init(void)
   __GPIOA_CLK_ENABLE();
   __GPIOD_CLK_ENABLE();
 	__GPIOB_CLK_ENABLE();
+	__GPIOF_CLK_ENABLE();		// for HSE and Boot0
 	
 	IND_LED_Init();
 }
