@@ -37,7 +37,8 @@ UART_HandleTypeDef huart5;
 
 #if (MusicNotesNumOfSamples == 10)
 /* 10 samples 12-bit amplitude sine wave: 1.650, 2.620, 3.219, 3.220, 2.622, 1.653, 0.682, 0.081, 0.079, 0.676 */
-const uint16_t sineDigital[10] = {2048, 3251, 3995, 3996, 3253, 2051, 847, 101, 98, 839};
+//const uint16_t sineDigital[10] = {2048, 3251, 3995, 3996, 3253, 2051, 847, 101, 98, 839};
+const uint16_t sineDigital[10] = {120,179,205,205,179,120,61,25,25,61};
 #elif (MusicNotesNumOfSamples == 100)
 /* 100 samples 12-bit amplitude sine wave <<http://www.daycounter.com/Calculators/Sine-Generator-Calculator.phtml>> */
 const uint16_t sineDigital[100] = {
@@ -151,6 +152,10 @@ void Module_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
 	HAL_GPIO_Init(_STDBY_PORT, &GPIO_InitStruct);
+	
+	
+	/* Enable the amplifier */
+	TS4990_ENABLE();
   
 }
 /*-----------------------------------------------------------*/
@@ -201,15 +206,13 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 */
 void PlaySine(float freq, uint16_t NumOfSamples, float length)
 {
-	TS4990_ENABLE();
-	
 	/* Timer trigger frequency */
 	float ftrg = freq * NumOfSamples;
 	
 	/* Number of waves */	
 	NumberOfTuneWaves = length * freq;
 	
-	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM2 trigger clock) - 1, ARR = TIM2 trigger clock - 1 */
+	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
 	htim6.Instance->ARR = 1;
 	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / ftrg) / 2) - 1);
@@ -225,8 +228,32 @@ void PlaySine(float freq, uint16_t NumOfSamples, float length)
 	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
 	HAL_TIM_Base_Stop(&htim6);
 	NumberOfTuneWaves = 0;
+}
+
+/*-----------------------------------------------------------*/
+
+/* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
+*/
+void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave)
+{
+	/* Play the wave only once */	
+	NumberOfTuneWaves = 1;
 	
-	TS4990_DISABLE();
+	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM2 trigger clock) - 1, ARR = TIM2 trigger clock - 1 */
+	HAL_TIM_Base_Stop(&htim6);
+	htim6.Instance->ARR = 1;
+	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / rate) / 2) - 1);
+	HAL_TIM_Base_Start(&htim6);
+	
+	/* Start the DAC DMA */
+	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)wave, length, DAC_ALIGN_8B_R); 
+		
+	/* Wait indefinitly until DMA transfer is finished */
+	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+	
+	/* Reset the DAC DMA and trigger timer */
+	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	HAL_TIM_Base_Stop(&htim6);
 }
 
 /*-----------------------------------------------------------*/

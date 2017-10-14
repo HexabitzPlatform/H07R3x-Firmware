@@ -85,7 +85,7 @@
 #define	_DAC_PIN				GPIO_PIN_4
 #define	_DAC_PORT				GPIOA
 
-#define MusicNotesNumOfSamples	256
+#define MusicNotesNumOfSamples	10
 
 /* H01R0_Status Type Definition */  
 typedef enum 
@@ -106,6 +106,8 @@ extern uint32_t NumberOfTuneWaves;
 /* Macros for TS4990 amplifier standby control */
 #define TS4990_ENABLE()			HAL_GPIO_WritePin(_STDBY_PORT,_STDBY_PIN,GPIO_PIN_SET)
 #define TS4990_DISABLE()		HAL_GPIO_WritePin(_STDBY_PORT,_STDBY_PIN,GPIO_PIN_SET)
+
+#define BYTE static const uint8_t
 
 /* Macros for musical notes */
 #define C1(t)		PlaySine(notesFreq[0][0], MusicNotesNumOfSamples, t)
@@ -250,6 +252,7 @@ extern void MX_USART5_UART_Init(void);
 */
 
 extern void PlaySine(float freq, uint16_t NumOfSamples, float length);
+extern void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave);
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|
