@@ -2,8 +2,8 @@
     BitzOS (BOS) V0.1.0 - Copyright (C) 2017 Hexabitz
     All rights reserved
 
-    File Name     : H04R0.c
-    Description   : Source code for module H04R0.
+    File Name     : H07R3.c
+    Description   : Source code for module H07R3.
 										Sound speaker (Knowles) with audio amp (TS4990IST) and headset port 
 		
 		Required MCU resources : 
@@ -130,7 +130,7 @@ const float notesFreq[12][9] = {	{16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1
    ----------------------------------------------------------------------- 
 */
 
-/* --- H04R0 module initialization. 
+/* --- H07R3 module initialization. 
 */
 void Module_Init(void)
 {
@@ -160,17 +160,17 @@ void Module_Init(void)
 }
 /*-----------------------------------------------------------*/
 
-/* --- H04R0 message processing task. 
+/* --- H07R3 message processing task. 
 */
 Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst)
 {
-	Module_Status result = H04R0_OK;
+	Module_Status result = H07R3_OK;
 	
 	switch (code)
 	{
 
 		default:
-			result = H04R0_ERR_UnknownMessage;
+			result = H07R3_ERR_UnknownMessage;
 			break;
 	}			
 

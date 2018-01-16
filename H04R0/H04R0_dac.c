@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * File Name          : H04R0_dac.c
+  * File Name          : H07R3_dac.c
   * Description        : This file provides code for the configuration
   *                      of the DAC instances.
   ******************************************************************************

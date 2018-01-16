@@ -333,9 +333,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F091xB,H04R0,_module=1</Define>
+              <Define>USE_HAL_DRIVER,STM32F091xB,H07R3,_module=1</Define>
               <Undefine></Undefine>
-              <IncludePath>..\User;..\H04R0;..\BOS;..\Thirdparty\Middleware\FreeRTOS\Source\CMSIS_RTOS;..\Thirdparty\Middleware\FreeRTOS\Source\include;..\Thirdparty\Middleware\FreeRTOS\Source\portable\RVDS\ARM_CM0;..\Thirdparty\STM32F0xx_HAL_Driver\Inc\Legacy;..\Thirdparty\STM32F0xx_HAL_Driver\Inc;..\Thirdparty\CMSIS\Device\ST\STM32F0xx\Include;..\Thirdparty\CMSIS\Include</IncludePath>
+              <IncludePath>..\User;..\H07R3;..\BOS;..\Thirdparty\Middleware\FreeRTOS\Source\CMSIS_RTOS;..\Thirdparty\Middleware\FreeRTOS\Source\include;..\Thirdparty\Middleware\FreeRTOS\Source\portable\RVDS\ARM_CM0;..\Thirdparty\STM32F0xx_HAL_Driver\Inc\Legacy;..\Thirdparty\STM32F0xx_HAL_Driver\Inc;..\Thirdparty\CMSIS\Device\ST\STM32F0xx\Include;..\Thirdparty\CMSIS\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -517,37 +517,37 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>BITZ/H04R0</GroupName>
+          <GroupName>BITZ/H07R3</GroupName>
           <Files>
             <File>
-              <FileName>H04R0.c</FileName>
+              <FileName>H07R3.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\H04R0\H04R0.c</FilePath>
+              <FilePath>..\H07R3\H07R3.c</FilePath>
             </File>
             <File>
-              <FileName>H04R0_dac.c</FileName>
+              <FileName>H07R3_dac.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\H04R0\H04R0_dac.c</FilePath>
+              <FilePath>..\H07R3\H07R3_dac.c</FilePath>
             </File>
             <File>
-              <FileName>H04R0_dma.c</FileName>
+              <FileName>H07R3_dma.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\H04R0\H04R0_dma.c</FilePath>
+              <FilePath>..\H07R3\H07R3_dma.c</FilePath>
             </File>
             <File>
-              <FileName>H04R0_gpio.c</FileName>
+              <FileName>H07R3_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\H04R0\H04R0_gpio.c</FilePath>
+              <FilePath>..\H07R3\H07R3_gpio.c</FilePath>
             </File>
             <File>
-              <FileName>H04R0_it.c</FileName>
+              <FileName>H07R3_it.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\H04R0\H04R0_it.c</FilePath>
+              <FilePath>..\H07R3\H07R3_it.c</FilePath>
             </File>
             <File>
-              <FileName>H04R0_uart.c</FileName>
+              <FileName>H07R3_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\H04R0\H04R0_uart.c</FilePath>
+              <FilePath>..\H07R3\H07R3_uart.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -612,7 +612,7 @@
             <File>
               <FileName>startup_stm32f091xc.s</FileName>
               <FileType>2</FileType>
-              <FilePath>..\H04R0\startup_stm32f091xc.s</FilePath>
+              <FilePath>..\H07R3\startup_stm32f091xc.s</FilePath>
             </File>
           </Files>
         </Group>

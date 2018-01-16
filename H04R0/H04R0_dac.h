@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * File Name          : H04R0_dac.h
+  * File Name          : H07R3_dac.h
   * Description        : This file contains all the functions prototypes for 
   *                      the DAC  
   ******************************************************************************
@@ -38,8 +38,8 @@
 */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __H04R0_dac_H
-#define __H04R0_dac_H
+#ifndef __H07R3_dac_H
+#define __H07R3_dac_H
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -59,7 +59,7 @@ extern void MX_DAC_Init(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__H04R0_dac_H */
+#endif /*__H07R3_dac_H */
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
