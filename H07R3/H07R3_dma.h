@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : H04R0_gpio.c
-  * Description        : This file provides code for the configuration
-  *                      of all used GPIO pins.
+  * File Name          : H07R3_dma.h
+  * Description        : This file contains all the functions prototypes for 
+  *                      the DMA  
   ******************************************************************************
   *
   * COPYRIGHT(c) 2015 STMicroelectronics
@@ -31,43 +31,63 @@
   *
   ******************************************************************************
   */
-
+	
 /*
 		MODIFIED by Hexabitz for BitzOS (BOS) V0.1.0 - Copyright (C) 2017 Hexabitz
     All rights reserved
 */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __H07R3_dma_H
+#define __H07R3_dma_H
+
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
-#include "BOS.h"
+#include "stm32f0xx_hal.h"
+	 
+	 
+/* Check which DMA interrupt occured */	 
+#define HAL_DMA_GET_IT_SOURCE(__HANDLE__, __INTERRUPT__)  ((((__HANDLE__)->ISR & (__INTERRUPT__)) == (__INTERRUPT__)) ? SET : RESET)
 
-/*----------------------------------------------------------------------------*/
-/* Configure GPIO                                                             */
-/*----------------------------------------------------------------------------*/
 
-/** Pinout Configuration
-*/
-void MX_GPIO_Init(void)
-{
-  /* GPIO Ports Clock Enable */
-  __GPIOC_CLK_ENABLE();
-  __GPIOA_CLK_ENABLE();
-  __GPIOD_CLK_ENABLE();
-	__GPIOB_CLK_ENABLE();
-	__GPIOF_CLK_ENABLE();		// for HSE and Boot0
-	
-	IND_LED_Init();
+/* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef portMemDMA1;
+extern DMA_HandleTypeDef portMemDMA2;
+extern DMA_HandleTypeDef portMemDMA3;
+extern DMA_HandleTypeDef portPortDMA1;
+extern DMA_HandleTypeDef portPortDMA2;
+extern DMA_HandleTypeDef portPortDMA3;	 
+
+extern uint32_t DMAStream1count;
+extern uint32_t DMAStream2count;
+extern uint32_t DMAStream3count;
+extern uint32_t DMAStream1total;
+extern uint32_t DMAStream2total;
+extern uint32_t DMAStream3total;
+
+extern UART_HandleTypeDef* dmaStreamDst[3];
+	 
+/* External function prototypes ----------------------------------------------*/
+extern void MX_DMA_Init(void);
+extern void PortMemDMA1_Setup(UART_HandleTypeDef* huart, uint8_t num);
+extern void PortMemDMA2_Setup(UART_HandleTypeDef* huart, uint8_t num);
+extern void PortMemDMA3_Setup(UART_HandleTypeDef* huart, uint8_t num);
+extern void PortPortDMA1_Setup(UART_HandleTypeDef* huartSrc, UART_HandleTypeDef* huartDst, uint8_t num);
+extern void PortPortDMA2_Setup(UART_HandleTypeDef* huartSrc, UART_HandleTypeDef* huartDst, uint8_t num);
+extern void PortPortDMA3_Setup(UART_HandleTypeDef* huartSrc, UART_HandleTypeDef* huartDst, uint8_t num);
+extern void StopPortPortDMA1(void);
+extern void StopPortPortDMA2(void);
+extern void StopPortPortDMA3(void);
+
+
+#ifdef __cplusplus
 }
+#endif
 
-//-- Configure indicator LED
-void IND_LED_Init(void)
-{
-	GPIO_InitTypeDef GPIO_InitStruct;
-	
-	GPIO_InitStruct.Pin = _IND_LED_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-	HAL_GPIO_Init(_IND_LED_PORT, &GPIO_InitStruct);
-}
+#endif /* __H07R3_dma_H */
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -2,25 +2,25 @@
     BitzOS (BOS) V0.1.0 - Copyright (C) 2017 Hexabitz
     All rights reserved
 		
-    File Name     : H04R0.c
-    Description   : Header file for module H04R0.
+    File Name     : H07R3.c
+    Description   : Header file for module H07R3.
 										Sound speaker (Knowles) with audio amp (TS4990IST) and headset port 
 */
 	
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef H04R0_H
-#define H04R0_H
+#ifndef H07R3_H
+#define H07R3_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
-#include "H04R0_uart.h"	
-#include "H04R0_gpio.h"	
-#include "H04R0_dma.h"		
-#include "H04R0_dac.h"	
+#include "H07R3_uart.h"	
+#include "H07R3_gpio.h"	
+#include "H07R3_dma.h"		
+#include "H07R3_dac.h"	
 
 /* Exported definitions -------------------------------------------------------*/
 
-#define	modulePN		_H04R0
+#define	modulePN		_H07R3
 
 /* Port-related definitions */
 #define	NumOfPorts		5
@@ -90,9 +90,9 @@
 /* H01R0_Status Type Definition */  
 typedef enum 
 {
-  H04R0_OK = 0,
-	H04R0_ERR_UnknownMessage = 1,
-	H04R0_ERROR = 255
+  H07R3_OK = 0,
+	H07R3_ERR_UnknownMessage = 1,
+	H07R3_ERROR = 255
 } Module_Status;
 
 /* Indicator LED */
@@ -262,6 +262,6 @@ extern void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave);
 
 
 
-#endif /* H04R0_H */
+#endif /* H07R3_H */
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/

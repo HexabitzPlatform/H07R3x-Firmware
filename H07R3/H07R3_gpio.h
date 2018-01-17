@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : H04R0_dma.h
+  * File Name          : H07R3_gpio.h
   * Description        : This file contains all the functions prototypes for 
-  *                      the DMA  
+  *                      the gpio  
   ******************************************************************************
   *
   * COPYRIGHT(c) 2015 STMicroelectronics
@@ -38,56 +38,25 @@
 */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __H04R0_dma_H
-#define __H04R0_dma_H
-
+#ifndef __H07R3_gpio_H
+#define __H07R3_gpio_H
 #ifdef __cplusplus
  extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
+
+
+extern void MX_GPIO_Init(void);
+extern void IND_LED_Init(void);
 	 
-	 
-/* Check which DMA interrupt occured */	 
-#define HAL_DMA_GET_IT_SOURCE(__HANDLE__, __INTERRUPT__)  ((((__HANDLE__)->ISR & (__INTERRUPT__)) == (__INTERRUPT__)) ? SET : RESET)
-
-
-/* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef portMemDMA1;
-extern DMA_HandleTypeDef portMemDMA2;
-extern DMA_HandleTypeDef portMemDMA3;
-extern DMA_HandleTypeDef portPortDMA1;
-extern DMA_HandleTypeDef portPortDMA2;
-extern DMA_HandleTypeDef portPortDMA3;	 
-
-extern uint32_t DMAStream1count;
-extern uint32_t DMAStream2count;
-extern uint32_t DMAStream3count;
-extern uint32_t DMAStream1total;
-extern uint32_t DMAStream2total;
-extern uint32_t DMAStream3total;
-
-extern UART_HandleTypeDef* dmaStreamDst[3];
-	 
-/* External function prototypes ----------------------------------------------*/
-extern void MX_DMA_Init(void);
-extern void PortMemDMA1_Setup(UART_HandleTypeDef* huart, uint8_t num);
-extern void PortMemDMA2_Setup(UART_HandleTypeDef* huart, uint8_t num);
-extern void PortMemDMA3_Setup(UART_HandleTypeDef* huart, uint8_t num);
-extern void PortPortDMA1_Setup(UART_HandleTypeDef* huartSrc, UART_HandleTypeDef* huartDst, uint8_t num);
-extern void PortPortDMA2_Setup(UART_HandleTypeDef* huartSrc, UART_HandleTypeDef* huartDst, uint8_t num);
-extern void PortPortDMA3_Setup(UART_HandleTypeDef* huartSrc, UART_HandleTypeDef* huartDst, uint8_t num);
-extern void StopPortPortDMA1(void);
-extern void StopPortPortDMA2(void);
-extern void StopPortPortDMA3(void);
 
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __H04R0_dma_H */
+#endif /*__H07R3_gpio_H */
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

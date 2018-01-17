@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * File Name          : H04R0_uart.c
+  * File Name          : H07R3_uart.c
   * Description        : This file provides code for the configuration
   *                      of the USART instances.
   ******************************************************************************

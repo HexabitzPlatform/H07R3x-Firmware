@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : H04R0_uart.h
-  * Description        : This file provides code for the configuration
-  *                      of the USART instances.
+  * File Name          : H07R3_dac.h
+  * Description        : This file contains all the functions prototypes for 
+  *                      the DAC  
   ******************************************************************************
   *
   * COPYRIGHT(c) 2015 STMicroelectronics
@@ -38,8 +38,8 @@
 */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __H04R0_uart_H
-#define __H04R0_uart_H
+#ifndef __H07R3_dac_H
+#define __H07R3_dac_H
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -47,41 +47,19 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
-/* External variables -----------------------------------------------*/
-extern FlagStatus UartRxReady;
-extern FlagStatus UartTxReady;
-extern uint8_t PcPort;
 
 	 
-// Blocking (polling-based) read
-#define readPx(port, buffer, n, timeout) while(HAL_UART_Receive(GetUart(port), (uint8_t *)buffer, n, timeout) != HAL_OK) {}
-	
-// Blocking (polling-based) write
-#define writePx(port, buffer, timeout) while(HAL_UART_Transmit(GetUart(port), (uint8_t *)buffer, strlen(buffer), timeout) != HAL_OK) {}
-
-/* Check which UART interrupt occured */	 
-#define HAL_UART_GET_IT_SOURCE(__HANDLE__, __INTERRUPT__)  ((((__HANDLE__)->Instance->ISR & (__INTERRUPT__)) == (__INTERRUPT__)) ? SET : RESET)
-
-/* External function prototypes -----------------------------------------------*/
-
-extern HAL_StatusTypeDef readPxMutex(uint8_t port, char *buffer, uint16_t n, uint32_t mutexTimeout, uint32_t portTimeout);
-extern HAL_StatusTypeDef writePxMutex(uint8_t port, char *buffer, uint16_t n, uint32_t mutexTimeout, uint32_t portTimeout);
-extern HAL_StatusTypeDef readPxITMutex(uint8_t port, char *buffer, uint16_t n, uint32_t mutexTimeout);
-extern HAL_StatusTypeDef writePxITMutex(uint8_t port, char *buffer, uint16_t n, uint32_t mutexTimeout);
-
+extern DAC_HandleTypeDef hdac;
+extern TIM_HandleTypeDef htim6;
+	 
+extern void MX_DAC_Init(void);
+	 
 
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__H04R0_uart_H */
+#endif /*__H07R3_dac_H */
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
