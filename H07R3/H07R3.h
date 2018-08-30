@@ -255,8 +255,8 @@ extern void MX_USART5_UART_Init(void);
    ----------------------------------------------------------------------- 
 */
 
-extern void PlaySine(float freq, uint16_t NumOfSamples, float length);
-extern void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave);
+void PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds);
+void PlayWave(uint8_t *wave, uint32_t length, uint16_t rate);
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|

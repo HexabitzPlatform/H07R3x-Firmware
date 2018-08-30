@@ -239,7 +239,7 @@ void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
 	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / rate) / 2) - 1);
+	htim6.Instance->PSC = (uint16_t)(((SystemCoreClock / rate) / 2) - 1);
 	HAL_TIM_Base_Start(&htim6);
 	
 	uint32_t alignment = DAC_ALIGN_8B_R;
@@ -253,66 +253,18 @@ void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_
 	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 }
 
-void PlaySine(float freq, uint16_t NumOfSamples, float length)
+void PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
 {
-	//PlayAudio((uint32_t *)sineDigital, NumOfSamples, length * freq, sizeof(sineDigital[0]), freq * NumOfSamples);
-	
-	//return;
-	/* Timer trigger frequency */
-	float ftrg = freq * NumOfSamples;
-	
-	/* Number of waves */	
-	NumberOfTuneWaves = length * freq;
-	playTask = xTaskGetCurrentTaskHandle();
-	
-	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
-	HAL_TIM_Base_Stop(&htim6);
-	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / ftrg) / 2) - 1);
-	HAL_TIM_Base_Start(&htim6);
-	
-	/* Start the DAC DMA */
-	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)sineDigital, NumOfSamples, DAC_ALIGN_12B_R); 
-		
-	/* Wait indefinitly until DMA transfer is finished */
-	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-	
-	/* Reset the DAC DMA and trigger timer */
-	//HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
-	//HAL_TIM_Base_Stop(&htim6);
-	//NumberOfTuneWaves = 0;
+	PlayAudio((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, sizeof(sineDigital[0]), freq * NumOfSamples);
 }
 
 /*-----------------------------------------------------------*/
 
 /* --- Play a WAVE Format Data. 
 */
-void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave)
+void PlayWave(uint8_t *wave, uint32_t length, uint16_t rate)
 {
-	
-	//PlayAudio((uint32_t *)wave, length, 1, sizeof(wave[0]), rate);
-	
-	//return;
-	/* Play the wave only once */	
-	NumberOfTuneWaves = 1;
-	
-	playTask = xTaskGetCurrentTaskHandle();
-	
-	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM2 trigger clock) - 1, ARR = TIM2 trigger clock - 1 */
-	HAL_TIM_Base_Stop(&htim6);
-	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / rate) / 2) - 1);
-	HAL_TIM_Base_Start(&htim6);
-	
-	/* Start the DAC DMA */
-	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)wave, length, DAC_ALIGN_8B_R); 
-		
-	/* Wait indefinitly until DMA transfer is finished */
-	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-	
-	/* Reset the DAC DMA and trigger timer */
-	//HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
-	//HAL_TIM_Base_Stop(&htim6);
+	PlayAudio((uint32_t *)wave, length, 1, sizeof(wave[0]), rate);
 }
 
 /*-----------------------------------------------------------*/
@@ -364,7 +316,7 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 		if (!strncmp(modeParams, sineModeString, max(strlen(sineModeString), modeStringParamLen))) {
 				PlaySine((float)freq, MusicNotesNumOfSamples, length);
 		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {
-				PlayWave(16000, WAVEBYTECODE_HITHERE_LENGTH, (uint8_t *)waveByteCode_HiThere);
+				PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000);
 		} else {
 			break;
 		}
