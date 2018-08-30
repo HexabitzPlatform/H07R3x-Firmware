@@ -92,6 +92,8 @@ typedef enum
 {
   H07R3_OK = 0,
 	H07R3_ERR_UnknownMessage = 1,
+	H07R3_ERR_DATA,
+	H07R3_ERR_PLAY,
 	H07R3_ERROR = 255
 } Module_Status;
 
@@ -102,6 +104,7 @@ typedef enum
 /* Exported variables */
 extern const float notesFreq[12][9];
 extern uint32_t NumberOfTuneWaves;
+extern TaskHandle_t playTask;
 
 /* Macros for TS4990 amplifier standby control */
 #define TS4990_ENABLE()			HAL_GPIO_WritePin(_STDBY_PORT,_STDBY_PIN,GPIO_PIN_SET)
@@ -243,7 +246,8 @@ extern void MX_USART5_UART_Init(void);
    ----------------------------------------------------------------------- 
 */
 
-
+#define CODE_H07R3_PLAY_SINE							800
+#define CODE_H07R3_PLAY_WAVE							801
 
 	
 /* -----------------------------------------------------------------------

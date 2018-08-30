@@ -20,9 +20,11 @@
 	
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
+#include "wave.h"
 
 
 uint32_t NumberOfTuneWaves = 0;
+TaskHandle_t playTask = NULL;
 
 
 /* Define UART variables */
@@ -119,10 +121,18 @@ const float notesFreq[12][9] = {	{16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1
 
 /* Private function prototypes -----------------------------------------------*/	
 
+BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+
 
 /* Create CLI commands --------------------------------------------------------*/
 
-
+static const CLI_Command_Definition_t PlayCommandDefination = {
+		(const int8_t *)"play",
+		(const int8_t *)"(H07R3) play:\r\n Syntax: play [sine]/[wave] (freq) (file)\r\n \
+			Play a sine wave or a wave file",
+		PlayCommand,
+		-1
+};
 
 
 /* -----------------------------------------------------------------------
@@ -166,9 +176,15 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 {
 	Module_Status result = H07R3_OK;
 	
-	switch (code)
-	{
-
+	switch (code) {
+		case CODE_H07R3_PLAY_SINE:
+		{
+			break;
+		}
+		case CODE_H07R3_PLAY_WAVE:
+		{
+			break;
+		}
 		default:
 			result = H07R3_ERR_UnknownMessage;
 			break;
@@ -183,7 +199,8 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 */
 void RegisterModuleCLICommands(void)
 {
-
+	// Todo: Check return values of register commands
+	FreeRTOS_CLIRegisterCommand(&PlayCommandDefination);
 }
 
 /*-----------------------------------------------------------*/
@@ -213,13 +230,40 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 
 /* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
 */
+
+void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate)
+{
+	NumberOfTuneWaves = numOfRepeats;
+	playTask = xTaskGetCurrentTaskHandle();
+	
+	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
+	HAL_TIM_Base_Stop(&htim6);
+	htim6.Instance->ARR = 1;
+	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / rate) / 2) - 1);
+	HAL_TIM_Base_Start(&htim6);
+	
+	uint32_t alignment = DAC_ALIGN_8B_R;
+	if (dataPointSize > 8)
+		alignment = DAC_ALIGN_12B_R;
+	
+	/* Start the DAC DMA */
+	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, pBuffer, length, alignment); 
+		
+	/* Wait indefinitly until DMA transfer is finished */
+	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+}
+
 void PlaySine(float freq, uint16_t NumOfSamples, float length)
 {
+	//PlayAudio((uint32_t *)sineDigital, NumOfSamples, length * freq, sizeof(sineDigital[0]), freq * NumOfSamples);
+	
+	//return;
 	/* Timer trigger frequency */
 	float ftrg = freq * NumOfSamples;
 	
 	/* Number of waves */	
 	NumberOfTuneWaves = length * freq;
+	playTask = xTaskGetCurrentTaskHandle();
 	
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
@@ -234,19 +278,25 @@ void PlaySine(float freq, uint16_t NumOfSamples, float length)
 	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 	
 	/* Reset the DAC DMA and trigger timer */
-	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
-	HAL_TIM_Base_Stop(&htim6);
-	NumberOfTuneWaves = 0;
+	//HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	//HAL_TIM_Base_Stop(&htim6);
+	//NumberOfTuneWaves = 0;
 }
 
 /*-----------------------------------------------------------*/
 
-/* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
+/* --- Play a WAVE Format Data. 
 */
 void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave)
 {
+	
+	//PlayAudio((uint32_t *)wave, length, 1, sizeof(wave[0]), rate);
+	
+	//return;
 	/* Play the wave only once */	
 	NumberOfTuneWaves = 1;
+	
+	playTask = xTaskGetCurrentTaskHandle();
 	
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM2 trigger clock) - 1, ARR = TIM2 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
@@ -261,8 +311,8 @@ void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave)
 	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 	
 	/* Reset the DAC DMA and trigger timer */
-	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
-	HAL_TIM_Base_Stop(&htim6);
+	//HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	//HAL_TIM_Base_Stop(&htim6);
 }
 
 /*-----------------------------------------------------------*/
@@ -272,6 +322,61 @@ void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave)
    ----------------------------------------------------------------------- 
 */
 
+
+static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeString, 
+										portBASE_TYPE *pModeStrParamLen, uint32_t *pFreq, uint32_t *pLength)
+{
+	char *modeParams = NULL;
+	char *freqParams = NULL;
+	char *lengthParams = NULL;
+	portBASE_TYPE modeStringParamLen = 0;
+	portBASE_TYPE freqStringParamLen = 0;
+	portBASE_TYPE lengthStringParamLen = 0;
+	
+	modeParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 1, &modeStringParamLen);
+	freqParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &freqStringParamLen);
+	lengthParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 3, &lengthStringParamLen);
+	
+	if ((modeParams == NULL) || (freqParams == NULL) || (lengthParams == NULL))
+		return false;
+	
+	*ppModeString = modeParams;
+	*pFreq = atoi(freqParams);
+	*pLength = atoi(lengthParams);
+	*pModeStrParamLen = modeStringParamLen;
+	return true;
+}
+
+BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString)
+{
+	const char sineModeString[] = "sine";
+	const char waveModeString[] = "wave";
+	char *modeParams = NULL;
+	portBASE_TYPE modeStringParamLen = 0;
+	uint32_t freq = 0, length = 0;
+	
+	*pcWriteBuffer = '\0';
+	
+	do {
+		if (PlayCommandLineParser(pcCommandString, &modeParams, &modeStringParamLen, &freq, &length) == false)
+			break;
+		
+		if (!strncmp(modeParams, sineModeString, max(strlen(sineModeString), modeStringParamLen))) {
+				PlaySine((float)freq, MusicNotesNumOfSamples, length);
+		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {
+				PlayWave(16000, WAVEBYTECODE_HITHERE_LENGTH, (uint8_t *)waveByteCode_HiThere);
+		} else {
+			break;
+		}
+		
+		strncat((char *)pcWriteBuffer, "Playing.....\r\n", xWriteBufferLen);
+		return pdFALSE;
+		
+	} while (0);
+	
+	strncat((char *)pcWriteBuffer, "Error: Invalid Params\r\n", xWriteBufferLen);
+	return pdFALSE;
+}
 
 
 /*-----------------------------------------------------------*/
