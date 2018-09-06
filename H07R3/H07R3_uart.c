@@ -371,10 +371,13 @@ HAL_StatusTypeDef writePxMutex(uint8_t port, char *buffer, uint16_t n, uint32_t 
 {
 	HAL_StatusTypeDef result = HAL_ERROR;
 	
+	if ((n == 0) || (buffer == NULL))
+		return HAL_OK;
+	
 	if (GetUart(port) != NULL) {
 		/*/ Wait for the semaphore to be available. */
 		if (osSemaphoreWait(PxTxSemaphoreHandle[port], mutexTimeout) == osOK) {
-			while( result != HAL_OK && result !=  HAL_TIMEOUT ) {
+			while ( result != HAL_OK && result !=  HAL_TIMEOUT ) {
 				result = HAL_UART_Transmit(GetUart(port), (uint8_t *)buffer, n, portTimeout);
 			}
 			/* Give back the semaphore. */

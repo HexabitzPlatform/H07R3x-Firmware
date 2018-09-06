@@ -112,7 +112,7 @@ void FrontEndTask(void * argument)
 		
 #endif
 
-#if 1
+#if 0
 		PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000);
 		Delay_ms(500);
 		PlayWave((uint8_t *)waveByteCode_HowAreYou, WAVEBYTECODE_HOWAREYOU_LENGTH, 16000);

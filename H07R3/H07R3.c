@@ -144,29 +144,18 @@ static const CLI_Command_Definition_t PlayCommandDefination = {
 */
 void Module_Init(void)
 {
-	GPIO_InitTypeDef GPIO_InitStruct;
-	
 	/* Array ports */
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_USART4_UART_Init();
   MX_USART5_UART_Init();
-	
 	/* DAC */
 	MX_DAC_Init();
 	
-	/* GPIO */
-	GPIO_InitStruct.Pin = _STDBY_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-	HAL_GPIO_Init(_STDBY_PORT, &GPIO_InitStruct);
-	
-	
-	/* Enable the amplifier */
-	TS4990_ENABLE();
-  
+	/* Initialize the Amplifier */
+	TS4990_Init();
+	TS4990_DISABLE();
 }
 /*-----------------------------------------------------------*/
 
@@ -179,6 +168,11 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 	switch (code) {
 		case CODE_H07R3_PLAY_SINE:
 		{
+			float freq = 0.0;
+			float durationInSeconds = 0.0;
+			memcpy(&freq, &messageParams[0], sizeof(freq));
+			memcpy(&freq, &messageParams[sizeof(freq)], sizeof(durationInSeconds));
+			PlaySine(freq, MusicNotesNumOfSamples, durationInSeconds);
 			break;
 		}
 		case CODE_H07R3_PLAY_WAVE:
@@ -228,16 +222,148 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
    ----------------------------------------------------------------------- 
 */
 
+#define AUDIO_DESC_QUE_SIZE								100
+
+QueueHandle_t audioDescQueue = NULL;
+xTaskHandle AudioPlayTaskHandle = NULL;
+bool isInitilized = false;
+
+typedef struct AudioDesc_s {
+	uint32_t *pBuffer;
+	uint32_t lenOfBuf;
+	uint32_t numOfBitsInACode;
+	
+	uint16_t numOfRepeats;
+	uint16_t delay;
+	
+	float rate;
+} AudioDesc_t;
+
+bool AddAudioDescToPlaylist(AudioDesc_t *pDesc);
+bool PlayAudioNonBlock(AudioDesc_t *pDesc);
+void AudioPlayTask(void *argument);
+
+
+bool TS4990_Init(void)
+{
+	if (isInitilized)
+		return true;
+	
+	audioDescQueue = xQueueCreate(AUDIO_DESC_QUE_SIZE, sizeof(AudioDesc_t));
+	if (audioDescQueue == NULL)
+		return false;
+	
+	if (xTaskCreate(AudioPlayTask, (const char *)"AudioPlayTask", (2 * configMINIMAL_STACK_SIZE), 
+									NULL, osPriorityNormal, &AudioPlayTaskHandle) != pdPASS)
+		return false;
+	
+	TS4990_ENABLE();
+	isInitilized = true;
+	return true;
+}
+
+bool TS4990_DeInit(void)
+{
+	if (!isInitilized)
+		return true;
+	
+	vQueueDelete(audioDescQueue);
+	TS4990_DISABLE();
+	isInitilized = false;
+	return true;
+}
+
+
 /* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
 */
 
+void AudioPlayTask(void *argument)
+{
+	AudioDesc_t desc;
+	const TickType_t TICKS_TO_WAIT = pdMS_TO_TICKS(1000);
+	
+	for (;;) {
+		while (xQueueReceive(audioDescQueue, (void *)&desc, TICKS_TO_WAIT) != pdTRUE);
+		
+		PlayAudioNonBlock(&desc);
+		
+		/* Wait indefinitly until DMA transfer is finished */
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+	}
+}
+
+void AudioDescInit(AudioDesc_t *pDesc)
+{
+	if (pDesc == NULL)
+		return;
+	
+	pDesc->pBuffer = NULL;
+	pDesc->lenOfBuf = 0;
+	pDesc->numOfBitsInACode = 0;
+	pDesc->numOfRepeats = 0;
+	pDesc->delay = 0;
+	pDesc->rate = 0.0;
+}
+
+bool AddAudioToPlaylist(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate)
+{
+	// TODO: Check if playing is alread in process
+	AudioDesc_t desc;
+	
+	AudioDescInit(&desc);
+	
+	desc.pBuffer = pBuffer;
+	desc.lenOfBuf = length;
+	desc.numOfBitsInACode = dataPointSize;
+	desc.numOfRepeats = numOfRepeats;
+	desc.rate = rate;
+	
+	return AddAudioDescToPlaylist(&desc);
+}
+
+bool PlayAudioNonBlock(AudioDesc_t *pDesc)
+{
+	NumberOfTuneWaves = pDesc->numOfRepeats;
+	
+	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
+	HAL_TIM_Base_Stop(&htim6);
+	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	
+	htim6.Instance->ARR = 1;
+	htim6.Instance->PSC = (uint16_t)(((SystemCoreClock / pDesc->rate) / 2) - 1);
+	HAL_TIM_Base_Start(&htim6);
+	
+	uint32_t alignment = DAC_ALIGN_8B_R;
+	if (pDesc->numOfBitsInACode > 8)
+		alignment = DAC_ALIGN_12B_R;
+	
+	/* Start the DAC DMA */
+	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, pDesc->pBuffer, pDesc->lenOfBuf, alignment);
+
+	return true;
+}
+
+bool AddAudioDescToPlaylist(AudioDesc_t *pDesc)
+{
+	// TODO: Check if playing is alread in process
+	if (pDesc == NULL)
+		return false;
+	if (xQueueSend(audioDescQueue, (const void *)pDesc, 0) != pdTRUE)
+		return false;
+	
+	return true;
+}
+
 void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate)
 {
+	// TODO: Check if playing is alread in process
 	NumberOfTuneWaves = numOfRepeats;
 	playTask = xTaskGetCurrentTaskHandle();
 	
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
+	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	
 	htim6.Instance->ARR = 1;
 	htim6.Instance->PSC = (uint16_t)(((SystemCoreClock / rate) / 2) - 1);
 	HAL_TIM_Base_Start(&htim6);
@@ -255,7 +381,7 @@ void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_
 
 void PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
 {
-	PlayAudio((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, sizeof(sineDigital[0]), freq * NumOfSamples);
+	AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, sizeof(sineDigital[0]) * 8, freq * NumOfSamples);
 }
 
 /*-----------------------------------------------------------*/
@@ -264,7 +390,7 @@ void PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
 */
 void PlayWave(uint8_t *wave, uint32_t length, uint16_t rate)
 {
-	PlayAudio((uint32_t *)wave, length, 1, sizeof(wave[0]), rate);
+	AddAudioToPlaylist((uint32_t *)wave, length, 1, sizeof(wave[0]) * 8, rate);
 }
 
 /*-----------------------------------------------------------*/

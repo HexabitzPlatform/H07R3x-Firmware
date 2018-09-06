@@ -214,7 +214,7 @@ void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 		count = 0;
 		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 		
-		vTaskNotifyGiveFromISR(playTask, &( xHigherPriorityTaskWoken ) );
+		vTaskNotifyGiveFromISR(AudioPlayTaskHandle, &( xHigherPriorityTaskWoken ) );
 		
 		HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
 		HAL_TIM_Base_Stop(&htim6);
