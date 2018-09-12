@@ -23,10 +23,6 @@
 #include "wave.h"
 
 
-uint32_t NumberOfTuneWaves = 0;
-TaskHandle_t playTask = NULL;
-
-
 /* Define UART variables */
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -34,8 +30,22 @@ UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart5;
 
+AudioDesc_t currentAudioDesc;
+
+typedef enum audioPlayTaskState_e {
+	STATE_DEQUE = 0,
+	STATE_PLAY_AUDIO,
+	STATE_WAIT
+} audioPlayTaskState_t;
+
 
 /* Private variables ---------------------------------------------------------*/
+
+QueueHandle_t audioDescQueue = NULL;
+TaskHandle_t AudioPlayTaskHandle = NULL;
+TaskHandle_t playTask = NULL;
+bool isInitilized = false;
+
 
 #if (MusicNotesNumOfSamples == 10)
 /* 10 samples 12-bit amplitude sine wave: 1.650, 2.620, 3.219, 3.220, 2.622, 1.653, 0.682, 0.081, 0.079, 0.676 */
@@ -122,6 +132,10 @@ const float notesFreq[12][9] = {	{16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1
 /* Private function prototypes -----------------------------------------------*/	
 
 BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+																	
+bool AddAudioDescToPlaylist(AudioDesc_t *pDesc);
+bool PlayAudioNonBlock(AudioDesc_t *pDesc);
+void AudioPlayTask(void *argument);
 
 
 /* Create CLI commands --------------------------------------------------------*/
@@ -140,6 +154,7 @@ static const CLI_Command_Definition_t PlayCommandDefination = {
    ----------------------------------------------------------------------- 
 */
 
+
 /* --- H07R3 module initialization. 
 */
 void Module_Init(void)
@@ -155,7 +170,7 @@ void Module_Init(void)
 	
 	/* Initialize the Amplifier */
 	TS4990_Init();
-	TS4990_DISABLE();
+	// TS4990_DISABLE();
 }
 /*-----------------------------------------------------------*/
 
@@ -222,28 +237,6 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
    ----------------------------------------------------------------------- 
 */
 
-#define AUDIO_DESC_QUE_SIZE								100
-
-QueueHandle_t audioDescQueue = NULL;
-xTaskHandle AudioPlayTaskHandle = NULL;
-bool isInitilized = false;
-
-typedef struct AudioDesc_s {
-	uint32_t *pBuffer;
-	uint32_t lenOfBuf;
-	uint32_t numOfBitsInACode;
-	
-	uint16_t numOfRepeats;
-	uint16_t delay;
-	
-	float rate;
-} AudioDesc_t;
-
-bool AddAudioDescToPlaylist(AudioDesc_t *pDesc);
-bool PlayAudioNonBlock(AudioDesc_t *pDesc);
-void AudioPlayTask(void *argument);
-
-
 bool TS4990_Init(void)
 {
 	if (isInitilized)
@@ -267,6 +260,7 @@ bool TS4990_DeInit(void)
 	if (!isInitilized)
 		return true;
 	
+	// TODO: Delete Task
 	vQueueDelete(audioDescQueue);
 	TS4990_DISABLE();
 	isInitilized = false;
@@ -276,19 +270,58 @@ bool TS4990_DeInit(void)
 
 /* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
 */
-
 void AudioPlayTask(void *argument)
 {
-	AudioDesc_t desc;
 	const TickType_t TICKS_TO_WAIT = pdMS_TO_TICKS(1000);
+	audioPlayTaskState_t state = STATE_DEQUE;
 	
+	// TODO: Make Sure the Audio Amplifier is activated
+	// TODO: Make sure DAC is zero when not playing
+	// TODO: Initialize currentAudioDesc
 	for (;;) {
-		while (xQueueReceive(audioDescQueue, (void *)&desc, TICKS_TO_WAIT) != pdTRUE);
+		switch (state) {
+		case STATE_DEQUE:
+		{
+			if (xQueueReceive(audioDescQueue, (void *)&currentAudioDesc, TICKS_TO_WAIT) != pdTRUE)
+				break;
+			
+			state = STATE_PLAY_AUDIO;
+			// Fall Though!
+		}
+		case STATE_PLAY_AUDIO:
+		{
+			if (PlayAudioNonBlock(&currentAudioDesc) == false) {
+				// TODO: Add a delay
+				break;
+			}
+			/* Wait indefinitly until DMA transfer is finished */
+			ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+			
+			if (currentAudioDesc.delay && (currentAudioDesc.numOfRepeats > 0)) {
+				state = STATE_WAIT;
+			} else {
+				state = STATE_DEQUE;
+			}
+			break;
+		}
+		case STATE_WAIT:
+		{
+			Delay_ms(currentAudioDesc.delay);			
+			if (currentAudioDesc.numOfRepeats > 0)
+				state = STATE_PLAY_AUDIO;
+			else
+				state = STATE_DEQUE;
+			
+			break;
+		}
 		
-		PlayAudioNonBlock(&desc);
-		
-		/* Wait indefinitly until DMA transfer is finished */
-		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		default:
+		{
+			// TODO: Handle Error
+			break;
+		}
+			
+		}
 	}
 }
 
@@ -305,7 +338,7 @@ void AudioDescInit(AudioDesc_t *pDesc)
 	pDesc->rate = 0.0;
 }
 
-bool AddAudioToPlaylist(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate)
+bool AddAudioToPlaylist(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate, uint32_t delay)
 {
 	// TODO: Check if playing is alread in process
 	AudioDesc_t desc;
@@ -317,14 +350,13 @@ bool AddAudioToPlaylist(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeat
 	desc.numOfBitsInACode = dataPointSize;
 	desc.numOfRepeats = numOfRepeats;
 	desc.rate = rate;
+	desc.delay = delay;
 	
 	return AddAudioDescToPlaylist(&desc);
 }
 
 bool PlayAudioNonBlock(AudioDesc_t *pDesc)
 {
-	NumberOfTuneWaves = pDesc->numOfRepeats;
-	
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
 	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
@@ -357,7 +389,7 @@ bool AddAudioDescToPlaylist(AudioDesc_t *pDesc)
 void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate)
 {
 	// TODO: Check if playing is alread in process
-	NumberOfTuneWaves = numOfRepeats;
+	// NumberOfTuneWaves = numOfRepeats;
 	playTask = xTaskGetCurrentTaskHandle();
 	
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
@@ -379,18 +411,19 @@ void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_
 	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 }
 
-void PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
+bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
 {
-	AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, sizeof(sineDigital[0]) * 8, freq * NumOfSamples);
+	return AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, 
+																										sizeof(sineDigital[0]) * 8, freq * NumOfSamples, 0);
 }
 
 /*-----------------------------------------------------------*/
 
 /* --- Play a WAVE Format Data. 
 */
-void PlayWave(uint8_t *wave, uint32_t length, uint16_t rate)
+bool PlayWave(uint8_t *wave, uint32_t length, uint16_t rate, int32_t repeats, uint16_t delayInMs)
 {
-	AddAudioToPlaylist((uint32_t *)wave, length, 1, sizeof(wave[0]) * 8, rate);
+	return AddAudioToPlaylist((uint32_t *)wave, length, repeats, sizeof(wave[0]) * 8, rate, delayInMs);
 }
 
 /*-----------------------------------------------------------*/
@@ -427,6 +460,7 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 
 BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString)
 {
+	// TODO: Change variable names
 	const char sineModeString[] = "sine";
 	const char waveModeString[] = "wave";
 	char *modeParams = NULL;
@@ -442,12 +476,10 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 		if (!strncmp(modeParams, sineModeString, max(strlen(sineModeString), modeStringParamLen))) {
 				PlaySine((float)freq, MusicNotesNumOfSamples, length);
 		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {
-				PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000);
+				PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000, freq, length);
 		} else {
 			break;
 		}
-		
-		strncat((char *)pcWriteBuffer, "Playing.....\r\n", xWriteBufferLen);
 		return pdFALSE;
 		
 	} while (0);

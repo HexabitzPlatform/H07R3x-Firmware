@@ -239,7 +239,20 @@ extern void MX_USART3_UART_Init(void);
 extern void MX_USART4_UART_Init(void);
 extern void MX_USART5_UART_Init(void);
 
+#define AUDIO_DESC_QUE_SIZE								100
 
+typedef struct AudioDesc_s {
+	uint32_t *pBuffer;
+	uint32_t lenOfBuf;
+	uint32_t numOfBitsInACode;
+	
+	int32_t numOfRepeats;
+	uint16_t delay;
+	
+	float rate;
+} AudioDesc_t;
+
+extern AudioDesc_t currentAudioDesc;
 
 
 /* -----------------------------------------------------------------------
@@ -259,8 +272,8 @@ extern void MX_USART5_UART_Init(void);
 bool TS4990_Init(void);
 bool TS4990_DeInit(void);
 
-void PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds);
-void PlayWave(uint8_t *wave, uint32_t length, uint16_t rate);
+bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds);
+bool PlayWave(uint8_t *wave, uint32_t length, uint16_t rate, int32_t repeats, uint16_t delayInMs);
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|
