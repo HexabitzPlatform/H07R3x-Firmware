@@ -38,9 +38,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
+#include "wave.h"
 
-#include "hi_there.c"
-#include "how_r_u.c"
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -77,13 +76,10 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
-  while (1)
-  {
+  while (1) {
 
 
   }
-
-
 }
 
 /*-----------------------------------------------------------*/
@@ -91,34 +87,38 @@ int main(void)
 /* FrontEndTask function */
 void FrontEndTask(void * argument)
 {
-	
-
   /* Infinite loop */
-  for(;;)
-  {
-//		C8(1); D8(1); E8(1); F8(1); G8(1); A8(1); B8(1);
-//		
-//		Delay_ms(1000);
-//		
-//		B8(1); A8(1); G8(1); F8(1); E8(1); D8(1); C8(1);
-//		
-//		Delay_ms(1000);
+  for(;;) {
+		
+#if 0
+		
+		C8(1); D8(1); E8(1); F8(1); G8(1); A8(1); B8(1);
+		
+		Delay_ms(1000);
+		
+		B8(1); A8(1); G8(1); F8(1); E8(1); D8(1); C8(1);
+		
+		Delay_ms(1000);
 		
 		/* Mary had a little lamb! */
 		
-//		E7(0.5); D7(0.5); C7(0.5); D7(0.5); E7(0.5); E7(0.5); E7(1);
-//		
-//		D7(0.5); D7(0.5); D7(1); E7(0.5); G7(0.5); G7(1);
-//		
-//		E7(0.5); D7(0.5); C7(0.5); D7(0.5); E7(0.5); E7(0.5); E7(0.5); E7(0.5);
-//		
-//		D7(0.5); D7(0.5); E7(0.5); D7(0.5); C7(1); 
-//		
-//		PlayWave(16000, NUM_ELEMENTS1, (uint8_t *)data1);
-//		Delay_ms(500);
-//		PlayWave(16000, NUM_ELEMENTS2, (uint8_t *)data2);
-//		
-//		Delay_ms(3000);
+		E7(0.5); D7(0.5); C7(0.5); D7(0.5); E7(0.5); E7(0.5); E7(1);
+		
+		D7(0.5); D7(0.5); D7(1); E7(0.5); G7(0.5); G7(1);
+		
+		E7(0.5); D7(0.5); C7(0.5); D7(0.5); E7(0.5); E7(0.5); E7(0.5); E7(0.5);
+		
+		D7(0.5); D7(0.5); E7(0.5); D7(0.5); C7(1); 
+		
+#endif
+
+#if 0
+		PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000);
+		Delay_ms(500);
+		PlayWave((uint8_t *)waveByteCode_HowAreYou, WAVEBYTECODE_HOWAREYOU_LENGTH, 16000);
+		
+		Delay_ms(3000);
+#endif
 	}
 }
 

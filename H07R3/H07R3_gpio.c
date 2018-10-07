@@ -58,6 +58,17 @@ void MX_GPIO_Init(void)
 	IND_LED_Init();
 }
 
+void TS4990_GPIO_Init(void)
+{
+	GPIO_InitTypeDef GPIO_InitStruct;
+	
+	GPIO_InitStruct.Pin = _STDBY_PIN;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+	HAL_GPIO_Init(_STDBY_PORT, &GPIO_InitStruct);
+}
+
 //-- Configure indicator LED
 void IND_LED_Init(void)
 {
