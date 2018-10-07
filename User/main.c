@@ -114,11 +114,11 @@ void FrontEndTask(void * argument)
 //		
 //		D7(0.5); D7(0.5); E7(0.5); D7(0.5); C7(1); 
 //		
-		PlayWave(16000, NUM_ELEMENTS1, (uint8_t *)data1);
-		Delay_ms(500);
-		PlayWave(16000, NUM_ELEMENTS2, (uint8_t *)data2);
-		
-		Delay_ms(3000);
+//		PlayWave(16000, NUM_ELEMENTS1, (uint8_t *)data1);
+//		Delay_ms(500);
+//		PlayWave(16000, NUM_ELEMENTS2, (uint8_t *)data2);
+//		
+//		Delay_ms(3000);
 	}
 }
 
