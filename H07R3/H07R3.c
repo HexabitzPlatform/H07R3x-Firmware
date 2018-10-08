@@ -147,11 +147,11 @@ static const CLI_Command_Definition_t PlayCommandDefination = {
 		(const int8_t *)"play",
 		(const int8_t *)"(H07R3) play:\r\n Syntax: play [tone]/[sine]/[wave] [note]/[freq] (file)\r\n \
 Play a musical tone or a sine wave or a wave file.\n\r Musical notes are:\n\r Cx, Dx, Ex, Fx, Gx, Ax, Bx OR:\n\r \
-Dox, Rex, Mix, Fax, Solx, Lax, Six where x is octave number 1 to 9\n\r - Separate musical notes by a space.\n\r \
+DOx, REx, MIx, FAx, SOLx, LAx, SIx where x is octave number 1 to 9\n\r - Separate musical notes by a space.\n\r \
 - Add # after the note to raise it by a semitone (half-step).\n\r \
 - Add note time in seconds with [t]. If ommited, default is t = 1.\n\r \
 - Add silence with [t] without a note.\n\r Examples:\n\r\t\
-Du4 Re4 Mi4[2] Fa4 Sol4[0.5] La4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]",
+DO4 RE4 MI4[2] FA4 SOL4[0.5] LA4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]\r\n",
 		PlayCommand,
 		-1
 };
@@ -247,7 +247,7 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 */
 float ParseNoteTime(uint8_t start, char *noteParams, portBASE_TYPE noteStringParamLen)
 {
-	if (noteParams[start] == '[' && noteParams[noteStringParamLen-1] == ']') {
+	if (noteParams[start] == '[' && *(strchr(&noteParams[start],' ')-1) == ']') {
 		return atof(&noteParams[start+1]);
 	} else {
 		return 1.0f;
@@ -459,7 +459,7 @@ bool PlayWave(uint8_t *wave, uint32_t length, uint16_t rate, int32_t repeats, ui
 
 
 static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeString, 
-										portBASE_TYPE *pModeStrParamLen, uint32_t *pFreq, uint32_t *pLength, bool *toneMode)
+										portBASE_TYPE *pModeStrParamLen, float *pFreq, float *pLength, bool *toneMode)
 {
 	char *modeParams = NULL;
 	char *freqParams = NULL;
@@ -506,12 +506,13 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 			return false;
 		// Parse the musical note
 		} else {		
-			if (noteParams[0] == '[' && noteParams[noteStringParamLen-1] == ']') {	// silence note
+			if (noteParams[0] == '[' && *(strchr(&noteParams[0],' ')-1) == ']') {	// silence note
 				*pFreq = 0;
-				noteParams[noteStringParamLen-1] = '\0';
+				*(strchr(&noteParams[0],' ')-1) = '\0';
 				*pLength = atoi(&noteParams[1]);
 			} else if (noteParams[0] == 'c') {
 				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
 				if (noteParams[2] == '#') {
 					*pFreq = notesFreq[Csharp][octave-1];
 					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
@@ -521,11 +522,132 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 				}
 			} else if (!strncmp(noteParams, "do", 2)) {
 				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
 				if (noteParams[3] == '#') {
 					*pFreq = notesFreq[DOsharp][octave-1];
 					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
 				} else {
 					*pFreq = notesFreq[DO][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'd') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Dsharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[D][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "re", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[REsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[RE][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'e') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[E][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[E][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "mi", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[MI][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[MI][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'f') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Fsharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[F][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "fa", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[FAsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[FA][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'g') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Gsharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[G][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "sol", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[SOLsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[SOL][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'a') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Asharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[A][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "la", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[LAsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[LA][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'b') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[B][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[B][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "si", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[SI][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[SI][octave-1];
 					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
 				}
 			}
@@ -541,7 +663,7 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 	// TODO: Change variable names
 	char *modeParams = NULL;
 	portBASE_TYPE modeStringParamLen = 0;
-	uint32_t freq = 0, length = 0;
+	float freq = 0, length = 0;
 	bool toneMode = false;
 	*pcWriteBuffer = '\0';
 	
@@ -550,21 +672,20 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 			break;
 		
 		if (toneMode || !strncmp(modeParams, toneModeString, max(strlen(toneModeString), modeStringParamLen))) {		// Loop over this mode until all notes are proccessed
-				PlaySine((float)freq, MusicNotesNumOfSamples, length);		
+				PlaySine(freq, MusicNotesNumOfSamples, length);		
 		} else if (!strncmp(modeParams, sineModeString, max(strlen(sineModeString), modeStringParamLen))) {		// Execute this mode once
-				PlaySine((float)freq, MusicNotesNumOfSamples, length);
+				PlaySine(freq, MusicNotesNumOfSamples, length);
 				return pdFALSE;
 		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {		// Execute this mode once
-				PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000, freq, length);
+				PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000, (int32_t) freq, (uint16_t) length);
 				return pdFALSE;
 		} else {
+			strncat((char *)pcWriteBuffer, "Error: Invalid Params\r\n", xWriteBufferLen);
 			break;
 		}
-		return pdFALSE;
 		
 	} while (1);
 	
-	strncat((char *)pcWriteBuffer, "Error: Invalid Params\r\n", xWriteBufferLen);
 	return pdFALSE;
 }
 
