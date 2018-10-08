@@ -114,6 +114,34 @@ extern xTaskHandle playTask;
 #define BYTE static const uint8_t
 
 /* Macros for musical notes */
+
+#define C						0
+#define DO					0
+#define Csharp			1
+#define DOsharp			1
+#define D						2
+#define RE					2
+#define Dsharp			3
+#define REsharp			3
+#define E						4
+#define MI					4
+#define F						5
+#define FA					5
+#define Fsharp			6
+#define FAsharp			6
+#define G						7
+#define SOL					7
+#define Gsharp			8
+#define SOLsharp		8
+#define A						9
+#define LA					9
+#define Asharp			10
+#define LAsharp			10
+#define B						11
+#define SI					11
+
+
+
 #define C1(t)					PlaySine(notesFreq[0][0], MusicNotesNumOfSamples, t)
 #define C2(t)					PlaySine(notesFreq[0][1], MusicNotesNumOfSamples, t)
 #define C3(t)					PlaySine(notesFreq[0][2], MusicNotesNumOfSamples, t)
@@ -122,6 +150,7 @@ extern xTaskHandle playTask;
 #define C6(t)					PlaySine(notesFreq[0][5], MusicNotesNumOfSamples, t)
 #define C7(t)					PlaySine(notesFreq[0][6], MusicNotesNumOfSamples, t)
 #define C8(t)					PlaySine(notesFreq[0][7], MusicNotesNumOfSamples, t)
+#define C9(t)					PlaySine(notesFreq[0][8], MusicNotesNumOfSamples, t)
 
 #define Csharp1(t)		PlaySine(notesFreq[1][0], MusicNotesNumOfSamples, t)
 #define Csharp2(t)		PlaySine(notesFreq[1][1], MusicNotesNumOfSamples, t)
@@ -131,6 +160,7 @@ extern xTaskHandle playTask;
 #define Csharp6(t)		PlaySine(notesFreq[1][5], MusicNotesNumOfSamples, t)
 #define Csharp7(t)		PlaySine(notesFreq[1][6], MusicNotesNumOfSamples, t)
 #define Csharp8(t)		PlaySine(notesFreq[1][7], MusicNotesNumOfSamples, t)
+#define Csharp9(t)		PlaySine(notesFreq[1][8], MusicNotesNumOfSamples, t)
 
 #define D1(t)					PlaySine(notesFreq[2][0], MusicNotesNumOfSamples, t)
 #define D2(t)					PlaySine(notesFreq[2][1], MusicNotesNumOfSamples, t)
@@ -140,6 +170,7 @@ extern xTaskHandle playTask;
 #define D6(t)					PlaySine(notesFreq[2][5], MusicNotesNumOfSamples, t)
 #define D7(t)					PlaySine(notesFreq[2][6], MusicNotesNumOfSamples, t)
 #define D8(t)					PlaySine(notesFreq[2][7], MusicNotesNumOfSamples, t)
+#define D9(t)					PlaySine(notesFreq[2][8], MusicNotesNumOfSamples, t)
 
 #define Dsharp1(t)		PlaySine(notesFreq[3][0], MusicNotesNumOfSamples, t)
 #define Dsharp2(t)		PlaySine(notesFreq[3][1], MusicNotesNumOfSamples, t)
@@ -149,6 +180,7 @@ extern xTaskHandle playTask;
 #define Dsharp6(t)		PlaySine(notesFreq[3][5], MusicNotesNumOfSamples, t)
 #define Dsharp7(t)		PlaySine(notesFreq[3][6], MusicNotesNumOfSamples, t)
 #define Dsharp8(t)		PlaySine(notesFreq[3][7], MusicNotesNumOfSamples, t)
+#define Dsharp9(t)		PlaySine(notesFreq[3][8], MusicNotesNumOfSamples, t)
 
 #define E1(t)					PlaySine(notesFreq[4][0], MusicNotesNumOfSamples, t)
 #define E2(t)					PlaySine(notesFreq[4][1], MusicNotesNumOfSamples, t)
@@ -158,6 +190,7 @@ extern xTaskHandle playTask;
 #define E6(t)					PlaySine(notesFreq[4][5], MusicNotesNumOfSamples, t)
 #define E7(t)					PlaySine(notesFreq[4][6], MusicNotesNumOfSamples, t)
 #define E8(t)					PlaySine(notesFreq[4][7], MusicNotesNumOfSamples, t)
+#define E9(t)					PlaySine(notesFreq[4][8], MusicNotesNumOfSamples, t)
 
 #define F1(t)					PlaySine(notesFreq[5][0], MusicNotesNumOfSamples, t)
 #define F2(t)					PlaySine(notesFreq[5][1], MusicNotesNumOfSamples, t)
@@ -167,6 +200,7 @@ extern xTaskHandle playTask;
 #define F6(t)					PlaySine(notesFreq[5][5], MusicNotesNumOfSamples, t)
 #define F7(t)					PlaySine(notesFreq[5][6], MusicNotesNumOfSamples, t)
 #define F8(t)					PlaySine(notesFreq[5][7], MusicNotesNumOfSamples, t)
+#define F9(t)					PlaySine(notesFreq[5][8], MusicNotesNumOfSamples, t)
 
 #define Fsharp1(t)		PlaySine(notesFreq[6][0], MusicNotesNumOfSamples, t)
 #define Fsharp2(t)		PlaySine(notesFreq[6][1], MusicNotesNumOfSamples, t)
@@ -176,6 +210,7 @@ extern xTaskHandle playTask;
 #define Fsharp6(t)		PlaySine(notesFreq[6][5], MusicNotesNumOfSamples, t)
 #define Fsharp7(t)		PlaySine(notesFreq[6][6], MusicNotesNumOfSamples, t)
 #define Fsharp8(t)		PlaySine(notesFreq[6][7], MusicNotesNumOfSamples, t)
+#define Fsharp9(t)		PlaySine(notesFreq[6][8], MusicNotesNumOfSamples, t)
 
 #define G1(t)					PlaySine(notesFreq[7][0], MusicNotesNumOfSamples, t)
 #define G2(t)					PlaySine(notesFreq[7][1], MusicNotesNumOfSamples, t)
@@ -185,6 +220,7 @@ extern xTaskHandle playTask;
 #define G6(t)					PlaySine(notesFreq[7][5], MusicNotesNumOfSamples, t)
 #define G7(t)					PlaySine(notesFreq[7][6], MusicNotesNumOfSamples, t)
 #define G8(t)					PlaySine(notesFreq[7][7], MusicNotesNumOfSamples, t)
+#define G9(t)					PlaySine(notesFreq[7][8], MusicNotesNumOfSamples, t)
 
 #define Gsharp1(t)		PlaySine(notesFreq[8][0], MusicNotesNumOfSamples, t)
 #define Gsharp2(t)		PlaySine(notesFreq[8][1], MusicNotesNumOfSamples, t)
@@ -194,6 +230,7 @@ extern xTaskHandle playTask;
 #define Gsharp6(t)		PlaySine(notesFreq[8][5], MusicNotesNumOfSamples, t)
 #define Gsharp7(t)		PlaySine(notesFreq[8][6], MusicNotesNumOfSamples, t)
 #define Gsharp8(t)		PlaySine(notesFreq[8][7], MusicNotesNumOfSamples, t)
+#define Gsharp9(t)		PlaySine(notesFreq[8][8], MusicNotesNumOfSamples, t)
 
 #define A1(t)					PlaySine(notesFreq[9][0], MusicNotesNumOfSamples, t)
 #define A2(t)					PlaySine(notesFreq[9][1], MusicNotesNumOfSamples, t)
@@ -203,6 +240,7 @@ extern xTaskHandle playTask;
 #define A6(t)					PlaySine(notesFreq[9][5], MusicNotesNumOfSamples, t)
 #define A7(t)					PlaySine(notesFreq[9][6], MusicNotesNumOfSamples, t)
 #define A8(t)					PlaySine(notesFreq[9][7], MusicNotesNumOfSamples, t)
+#define A9(t)					PlaySine(notesFreq[9][8], MusicNotesNumOfSamples, t)
 
 #define Asharp1(t)		PlaySine(notesFreq[10][0], MusicNotesNumOfSamples, t)
 #define Asharp2(t)		PlaySine(notesFreq[10][1], MusicNotesNumOfSamples, t)
@@ -212,6 +250,7 @@ extern xTaskHandle playTask;
 #define Asharp6(t)		PlaySine(notesFreq[10][5], MusicNotesNumOfSamples, t)
 #define Asharp7(t)		PlaySine(notesFreq[10][6], MusicNotesNumOfSamples, t)
 #define Asharp8(t)		PlaySine(notesFreq[10][7], MusicNotesNumOfSamples, t)
+#define Asharp9(t)		PlaySine(notesFreq[10][8], MusicNotesNumOfSamples, t)
 
 #define B1(t)					PlaySine(notesFreq[11][0], MusicNotesNumOfSamples, t)
 #define B2(t)					PlaySine(notesFreq[11][1], MusicNotesNumOfSamples, t)
@@ -221,6 +260,9 @@ extern xTaskHandle playTask;
 #define B6(t)					PlaySine(notesFreq[11][5], MusicNotesNumOfSamples, t)
 #define B7(t)					PlaySine(notesFreq[11][6], MusicNotesNumOfSamples, t)
 #define B8(t)					PlaySine(notesFreq[11][7], MusicNotesNumOfSamples, t)
+#define B9(t)					PlaySine(notesFreq[11][8], MusicNotesNumOfSamples, t)
+
+/* Other macros */
 
 
 /* Export UART variables */
@@ -229,8 +271,6 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart5;
-
-
 
 /* Define UART Init prototypes */
 extern void MX_USART1_UART_Init(void);

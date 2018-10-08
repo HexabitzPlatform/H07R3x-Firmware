@@ -46,6 +46,9 @@ TaskHandle_t AudioPlayTaskHandle = NULL;
 TaskHandle_t playTask = NULL;
 bool isInitilized = false;
 
+const char sineModeString[] = "sine";
+const char waveModeString[] = "wave";
+const char toneModeString[] = "tone";
 
 #if (MusicNotesNumOfSamples == 10)
 /* 10 samples 12-bit amplitude sine wave: 1.650, 2.620, 3.219, 3.220, 2.622, 1.653, 0.682, 0.081, 0.079, 0.676 */
@@ -136,17 +139,23 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 bool AddAudioDescToPlaylist(AudioDesc_t *pDesc);
 bool PlayAudioNonBlock(AudioDesc_t *pDesc);
 void AudioPlayTask(void *argument);
-
+float ParseNoteTime(uint8_t start, char *noteParams, portBASE_TYPE noteStringParamLen);
 
 /* Create CLI commands --------------------------------------------------------*/
 
 static const CLI_Command_Definition_t PlayCommandDefination = {
 		(const int8_t *)"play",
-		(const int8_t *)"(H07R3) play:\r\n Syntax: play [sine]/[wave] (freq) (file)\r\n \
-			Play a sine wave or a wave file",
+		(const int8_t *)"(H07R3) play:\r\n Syntax: play [tone]/[sine]/[wave] [note]/[freq] (file)\r\n \
+Play a musical tone or a sine wave or a wave file.\n\r Musical notes are:\n\r Cx, Dx, Ex, Fx, Gx, Ax, Bx OR:\n\r \
+Dox, Rex, Mix, Fax, Solx, Lax, Six where x is octave number 1 to 9\n\r - Separate musical notes by a space.\n\r \
+- Add # after the note to raise it by a semitone (half-step).\n\r \
+- Add note time in seconds with [t]. If ommited, default is t = 1.\n\r \
+- Add silence with [t] without a note.\n\r Examples:\n\r\t\
+Du4 Re4 Mi4[2] Fa4 Sol4[0.5] La4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]",
 		PlayCommand,
 		-1
 };
+/*-----------------------------------------------------------*/
 
 
 /* -----------------------------------------------------------------------
@@ -231,6 +240,21 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 		
 	return 0;
 }
+
+/*-----------------------------------------------------------*/
+
+/* --- Get the port for a given UART. 
+*/
+float ParseNoteTime(uint8_t start, char *noteParams, portBASE_TYPE noteStringParamLen)
+{
+	if (noteParams[start] == '[' && noteParams[noteStringParamLen-1] == ']') {
+		return atof(&noteParams[start+1]);
+	} else {
+		return 1.0f;
+	}
+}
+
+/*-----------------------------------------------------------*/
 
 /* -----------------------------------------------------------------------
 	|																APIs	 																 	|
@@ -435,54 +459,110 @@ bool PlayWave(uint8_t *wave, uint32_t length, uint16_t rate, int32_t repeats, ui
 
 
 static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeString, 
-										portBASE_TYPE *pModeStrParamLen, uint32_t *pFreq, uint32_t *pLength)
+										portBASE_TYPE *pModeStrParamLen, uint32_t *pFreq, uint32_t *pLength, bool *toneMode)
 {
 	char *modeParams = NULL;
 	char *freqParams = NULL;
 	char *lengthParams = NULL;
+	char *noteParams = NULL;
 	portBASE_TYPE modeStringParamLen = 0;
 	portBASE_TYPE freqStringParamLen = 0;
 	portBASE_TYPE lengthStringParamLen = 0;
+	portBASE_TYPE noteStringParamLen = 0;
+	static char lastNote = 1; uint8_t octave = 0;
 	
-	modeParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 1, &modeStringParamLen);
-	freqParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &freqStringParamLen);
-	lengthParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 3, &lengthStringParamLen);
-	
-	if ((modeParams == NULL) || (freqParams == NULL) || (lengthParams == NULL))
-		return false;
-	
-	*ppModeString = modeParams;
-	*pFreq = atoi(freqParams);
-	*pLength = atoi(lengthParams);
-	*pModeStrParamLen = modeStringParamLen;
-	return true;
+	// Parse mode parameter
+	if (lastNote == 1) 
+	{
+		modeParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 1, &modeStringParamLen);
+		if (modeParams == NULL)
+			return false;	
+		
+		*ppModeString = modeParams;
+		*pModeStrParamLen = modeStringParamLen;
+	} 
+
+	// Non-tone mode
+	if (strncmp(modeParams, toneModeString, max(strlen(toneModeString), modeStringParamLen)) != 0)
+	{	
+		freqParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &freqStringParamLen);
+		lengthParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 3, &lengthStringParamLen);
+		if ((freqParams == NULL) || (lengthParams == NULL))
+			return false;
+		
+		*pFreq = atoi(freqParams);
+		*pLength = atoi(lengthParams);
+		
+		return true;
+	}
+	// Tone mode
+	else
+	{
+		// Parse musical notes one by one
+		noteParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, ++lastNote, &noteStringParamLen);
+
+		if (noteParams == NULL) {
+			lastNote = 1;		// Reset this for next command
+			return false;
+		// Parse the musical note
+		} else {		
+			if (noteParams[0] == '[' && noteParams[noteStringParamLen-1] == ']') {	// silence note
+				*pFreq = 0;
+				noteParams[noteStringParamLen-1] = '\0';
+				*pLength = atoi(&noteParams[1]);
+			} else if (noteParams[0] == 'c') {
+				octave = atoi(&noteParams[1]);
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Csharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[C][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "do", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[DOsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[DO][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			}
+			
+			*toneMode = true;		// Use this flag to avoid comparing mode strings for each note
+			return true;
+		}
+	}
 }
 
 BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString)
 {
 	// TODO: Change variable names
-	const char sineModeString[] = "sine";
-	const char waveModeString[] = "wave";
 	char *modeParams = NULL;
 	portBASE_TYPE modeStringParamLen = 0;
 	uint32_t freq = 0, length = 0;
-	
+	bool toneMode = false;
 	*pcWriteBuffer = '\0';
 	
 	do {
-		if (PlayCommandLineParser(pcCommandString, &modeParams, &modeStringParamLen, &freq, &length) == false)
+		if (PlayCommandLineParser(pcCommandString, &modeParams, &modeStringParamLen, &freq, &length, &toneMode) == false)
 			break;
 		
-		if (!strncmp(modeParams, sineModeString, max(strlen(sineModeString), modeStringParamLen))) {
+		if (toneMode || !strncmp(modeParams, toneModeString, max(strlen(toneModeString), modeStringParamLen))) {		// Loop over this mode until all notes are proccessed
+				PlaySine((float)freq, MusicNotesNumOfSamples, length);		
+		} else if (!strncmp(modeParams, sineModeString, max(strlen(sineModeString), modeStringParamLen))) {		// Execute this mode once
 				PlaySine((float)freq, MusicNotesNumOfSamples, length);
-		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {
+				return pdFALSE;
+		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {		// Execute this mode once
 				PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000, freq, length);
+				return pdFALSE;
 		} else {
 			break;
 		}
 		return pdFALSE;
 		
-	} while (0);
+	} while (1);
 	
 	strncat((char *)pcWriteBuffer, "Error: Invalid Params\r\n", xWriteBufferLen);
 	return pdFALSE;
