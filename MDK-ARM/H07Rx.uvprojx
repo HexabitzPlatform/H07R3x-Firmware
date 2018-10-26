@@ -11,7 +11,6 @@
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>5060422::V5.06 update 4 (build 422)::ARMCC</pCCUsed>
-      <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F091CBTx</Device>
@@ -138,7 +137,7 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -384,6 +383,16 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\User\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>wave_hi_there.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\wave_hi_there.c</FilePath>
+            </File>
+            <File>
+              <FileName>wave_how_r_u.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\wave_how_r_u.c</FilePath>
             </File>
           </Files>
         </Group>

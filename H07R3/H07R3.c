@@ -20,9 +20,7 @@
 	
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
-
-
-uint32_t NumberOfTuneWaves = 0;
+#include "wave.h"
 
 
 /* Define UART variables */
@@ -32,8 +30,25 @@ UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart5;
 
+AudioDesc_t currentAudioDesc;
+
+typedef enum audioPlayTaskState_e {
+	STATE_DEQUE = 0,
+	STATE_PLAY_AUDIO,
+	STATE_WAIT
+} audioPlayTaskState_t;
+
 
 /* Private variables ---------------------------------------------------------*/
+
+QueueHandle_t audioDescQueue = NULL;
+TaskHandle_t AudioPlayTaskHandle = NULL;
+TaskHandle_t playTask = NULL;
+bool isInitilized = false;
+
+const char sineModeString[] = "sine";
+const char waveModeString[] = "wave";
+const char toneModeString[] = "tone";
 
 #if (MusicNotesNumOfSamples == 10)
 /* 10 samples 12-bit amplitude sine wave: 1.650, 2.620, 3.219, 3.220, 2.622, 1.653, 0.682, 0.081, 0.079, 0.676 */
@@ -119,10 +134,28 @@ const float notesFreq[12][9] = {	{16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1
 
 /* Private function prototypes -----------------------------------------------*/	
 
+BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+																	
+bool AddAudioDescToPlaylist(AudioDesc_t *pDesc);
+bool PlayAudioNonBlock(AudioDesc_t *pDesc);
+void AudioPlayTask(void *argument);
+float ParseNoteTime(uint8_t start, char *noteParams, portBASE_TYPE noteStringParamLen);
 
 /* Create CLI commands --------------------------------------------------------*/
 
-
+static const CLI_Command_Definition_t PlayCommandDefination = {
+		(const int8_t *)"play",
+		(const int8_t *)"(H07R3) play:\r\n Syntax: play [tone]/[sine]/[wave] [note]/[freq] (file)\r\n \
+Play a musical tone or a sine wave or a wave file.\n\r Musical notes are:\n\r Cx, Dx, Ex, Fx, Gx, Ax, Bx OR:\n\r \
+DOx, REx, MIx, FAx, SOLx, LAx, SIx where x is octave number 1 to 9\n\r - Separate musical notes by a space.\n\r \
+- Add # after the note to raise it by a semitone (half-step).\n\r \
+- Add note time in seconds with [t]. If ommited, default is t = 1.\n\r \
+- Add silence with [t] without a note.\n\r Examples:\n\r\t\
+DO4 RE4 MI4[2] FA4 SOL4[0.5] LA4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]\r\n",
+		PlayCommand,
+		-1
+};
+/*-----------------------------------------------------------*/
 
 
 /* -----------------------------------------------------------------------
@@ -130,33 +163,23 @@ const float notesFreq[12][9] = {	{16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1
    ----------------------------------------------------------------------- 
 */
 
+
 /* --- H07R3 module initialization. 
 */
 void Module_Init(void)
 {
-	GPIO_InitTypeDef GPIO_InitStruct;
-	
 	/* Array ports */
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_USART4_UART_Init();
   MX_USART5_UART_Init();
-	
 	/* DAC */
 	MX_DAC_Init();
 	
-	/* GPIO */
-	GPIO_InitStruct.Pin = _STDBY_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-	HAL_GPIO_Init(_STDBY_PORT, &GPIO_InitStruct);
-	
-	
-	/* Enable the amplifier */
-	TS4990_ENABLE();
-  
+	/* Initialize the Amplifier */
+	TS4990_Init();
+	// TS4990_DISABLE();
 }
 /*-----------------------------------------------------------*/
 
@@ -166,9 +189,20 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 {
 	Module_Status result = H07R3_OK;
 	
-	switch (code)
-	{
-
+	switch (code) {
+		case CODE_H07R3_PLAY_SINE:
+		{
+			float freq = 0.0;
+			float durationInSeconds = 0.0;
+			memcpy(&freq, &messageParams[0], sizeof(freq));
+			memcpy(&freq, &messageParams[sizeof(freq)], sizeof(durationInSeconds));
+			PlaySine(freq, MusicNotesNumOfSamples, durationInSeconds);
+			break;
+		}
+		case CODE_H07R3_PLAY_WAVE:
+		{
+			break;
+		}
 		default:
 			result = H07R3_ERR_UnknownMessage;
 			break;
@@ -183,7 +217,8 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 */
 void RegisterModuleCLICommands(void)
 {
-
+	// Todo: Check return values of register commands
+	FreeRTOS_CLIRegisterCommand(&PlayCommandDefination);
 }
 
 /*-----------------------------------------------------------*/
@@ -206,63 +241,216 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 	return 0;
 }
 
+/*-----------------------------------------------------------*/
+
+/* --- Get the port for a given UART. 
+*/
+float ParseNoteTime(uint8_t start, char *noteParams, portBASE_TYPE noteStringParamLen)
+{
+	// Locate a space to find out if this is a single parameter or more
+	char *space = strchr(&noteParams[start-1],' ');
+	
+	if (noteParams[start-1] == '[' && (noteParams[noteStringParamLen-1] == ']' || (space != NULL && *(space-1) == ']')) ) {
+		return atof(&noteParams[start]);
+	} else {
+		return 1.0f;
+	}
+}
+
+/*-----------------------------------------------------------*/
+
 /* -----------------------------------------------------------------------
 	|																APIs	 																 	|
    ----------------------------------------------------------------------- 
 */
 
+bool TS4990_Init(void)
+{
+	if (isInitilized)
+		return true;
+	
+	audioDescQueue = xQueueCreate(AUDIO_DESC_QUE_SIZE, sizeof(AudioDesc_t));
+	if (audioDescQueue == NULL)
+		return false;
+	
+	if (xTaskCreate(AudioPlayTask, (const char *)"AudioPlayTask", (2 * configMINIMAL_STACK_SIZE), 
+									NULL, osPriorityNormal, &AudioPlayTaskHandle) != pdPASS)
+		return false;
+	
+	TS4990_ENABLE();
+	isInitilized = true;
+	return true;
+}
+
+bool TS4990_DeInit(void)
+{
+	if (!isInitilized)
+		return true;
+	
+	// TODO: Delete Task
+	vQueueDelete(audioDescQueue);
+	TS4990_DISABLE();
+	isInitilized = false;
+	return true;
+}
+
+
 /* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
 */
-void PlaySine(float freq, uint16_t NumOfSamples, float length)
+void AudioPlayTask(void *argument)
 {
-	/* Timer trigger frequency */
-	float ftrg = freq * NumOfSamples;
+	const TickType_t TICKS_TO_WAIT = pdMS_TO_TICKS(1000);
+	audioPlayTaskState_t state = STATE_DEQUE;
 	
-	/* Number of waves */	
-	NumberOfTuneWaves = length * freq;
+	// TODO: Make Sure the Audio Amplifier is activated
+	// TODO: Make sure DAC is zero when not playing
+	// TODO: Initialize currentAudioDesc
+	for (;;) {
+		switch (state) {
+		case STATE_DEQUE:
+		{
+			if (xQueueReceive(audioDescQueue, (void *)&currentAudioDesc, TICKS_TO_WAIT) != pdTRUE)
+				break;
+			
+			state = STATE_PLAY_AUDIO;
+			// Fall Though!
+		}
+		case STATE_PLAY_AUDIO:
+		{
+			if (PlayAudioNonBlock(&currentAudioDesc) == false) {
+				// TODO: Add a delay
+				break;
+			}
+			/* Wait indefinitly until DMA transfer is finished */
+			ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+			
+			if (currentAudioDesc.delay && (currentAudioDesc.numOfRepeats > 0)) {
+				state = STATE_WAIT;
+			} else {
+				state = STATE_DEQUE;
+			}
+			break;
+		}
+		case STATE_WAIT:
+		{
+			Delay_ms(currentAudioDesc.delay);			
+			if (currentAudioDesc.numOfRepeats > 0)
+				state = STATE_PLAY_AUDIO;
+			else
+				state = STATE_DEQUE;
+			
+			break;
+		}
+		
+		default:
+		{
+			// TODO: Handle Error
+			break;
+		}
+			
+		}
+	}
+}
+
+void AudioDescInit(AudioDesc_t *pDesc)
+{
+	if (pDesc == NULL)
+		return;
+	
+	pDesc->pBuffer = NULL;
+	pDesc->lenOfBuf = 0;
+	pDesc->numOfBitsInACode = 0;
+	pDesc->numOfRepeats = 0;
+	pDesc->delay = 0;
+	pDesc->rate = 0.0;
+}
+
+bool AddAudioToPlaylist(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate, uint32_t delay)
+{
+	// TODO: Check if playing is alread in process
+	AudioDesc_t desc;
+	
+	AudioDescInit(&desc);
+	
+	desc.pBuffer = pBuffer;
+	desc.lenOfBuf = length;
+	desc.numOfBitsInACode = dataPointSize;
+	desc.numOfRepeats = numOfRepeats;
+	desc.rate = rate;
+	desc.delay = delay;
+	
+	return AddAudioDescToPlaylist(&desc);
+}
+
+bool PlayAudioNonBlock(AudioDesc_t *pDesc)
+{
+	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
+	HAL_TIM_Base_Stop(&htim6);
+	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	
+	htim6.Instance->ARR = 1;
+	htim6.Instance->PSC = (uint16_t)(((SystemCoreClock / pDesc->rate) / 2) - 1);
+	HAL_TIM_Base_Start(&htim6);
+	
+	uint32_t alignment = DAC_ALIGN_8B_R;
+	if (pDesc->numOfBitsInACode > 8)
+		alignment = DAC_ALIGN_12B_R;
+	
+	/* Start the DAC DMA */
+	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, pDesc->pBuffer, pDesc->lenOfBuf, alignment);
+
+	return true;
+}
+
+bool AddAudioDescToPlaylist(AudioDesc_t *pDesc)
+{
+	// TODO: Check if playing is alread in process
+	if (pDesc == NULL)
+		return false;
+	if (xQueueSend(audioDescQueue, (const void *)pDesc, 0) != pdTRUE)
+		return false;
+	
+	return true;
+}
+
+void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate)
+{
+	// TODO: Check if playing is alread in process
+	// NumberOfTuneWaves = numOfRepeats;
+	playTask = xTaskGetCurrentTaskHandle();
 	
 	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
 	HAL_TIM_Base_Stop(&htim6);
+	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	
 	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / ftrg) / 2) - 1);
+	htim6.Instance->PSC = (uint16_t)(((SystemCoreClock / rate) / 2) - 1);
 	HAL_TIM_Base_Start(&htim6);
 	
+	uint32_t alignment = DAC_ALIGN_8B_R;
+	if (dataPointSize > 8)
+		alignment = DAC_ALIGN_12B_R;
+	
 	/* Start the DAC DMA */
-	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)sineDigital, NumOfSamples, DAC_ALIGN_12B_R); 
+	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, pBuffer, length, alignment); 
 		
 	/* Wait indefinitly until DMA transfer is finished */
 	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-	
-	/* Reset the DAC DMA and trigger timer */
-	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
-	HAL_TIM_Base_Stop(&htim6);
-	NumberOfTuneWaves = 0;
+}
+
+bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
+{
+	return AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, 
+																										sizeof(sineDigital[0]) * 8, freq * NumOfSamples, 0);
 }
 
 /*-----------------------------------------------------------*/
 
-/* --- Play a pure sine wave (minimum 2.8 Hz at 255 samples). 
+/* --- Play a WAVE Format Data. 
 */
-void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave)
+bool PlayWave(uint8_t *wave, uint32_t length, uint16_t rate, int32_t repeats, uint16_t delayInMs)
 {
-	/* Play the wave only once */	
-	NumberOfTuneWaves = 1;
-	
-	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM2 trigger clock) - 1, ARR = TIM2 trigger clock - 1 */
-	HAL_TIM_Base_Stop(&htim6);
-	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t) ( ((SystemCoreClock / rate) / 2) - 1);
-	HAL_TIM_Base_Start(&htim6);
-	
-	/* Start the DAC DMA */
-	HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)wave, length, DAC_ALIGN_8B_R); 
-		
-	/* Wait indefinitly until DMA transfer is finished */
-	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-	
-	/* Reset the DAC DMA and trigger timer */
-	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
-	HAL_TIM_Base_Stop(&htim6);
+	return AddAudioToPlaylist((uint32_t *)wave, length, repeats, sizeof(wave[0]) * 8, rate, delayInMs);
 }
 
 /*-----------------------------------------------------------*/
@@ -272,6 +460,237 @@ void PlayWave(uint16_t rate, uint32_t length, uint8_t *wave)
    ----------------------------------------------------------------------- 
 */
 
+
+static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeString, 
+										portBASE_TYPE *pModeStrParamLen, float *pFreq, float *pLength, bool *toneMode)
+{
+	char *modeParams = NULL;
+	char *freqParams = NULL;
+	char *lengthParams = NULL;
+	char *noteParams = NULL;
+	portBASE_TYPE modeStringParamLen = 0;
+	portBASE_TYPE freqStringParamLen = 0;
+	portBASE_TYPE lengthStringParamLen = 0;
+	portBASE_TYPE noteStringParamLen = 0;
+	static char lastNote = 1; uint8_t octave = 0;
+	
+	// Parse mode parameter
+	if (lastNote == 1) 
+	{
+		modeParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 1, &modeStringParamLen);
+		if (modeParams == NULL)
+			return false;	
+		
+		*ppModeString = modeParams;
+		*pModeStrParamLen = modeStringParamLen;
+	} 
+
+	// Non-tone mode
+	if (*toneMode == false && strncmp(modeParams, toneModeString, max(strlen(toneModeString), modeStringParamLen)) != 0)
+	{	
+		freqParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &freqStringParamLen);
+		lengthParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 3, &lengthStringParamLen);
+		if ((freqParams == NULL) || (lengthParams == NULL))
+			return false;
+		
+		*pFreq = atoi(freqParams);
+		*pLength = atoi(lengthParams);
+		
+		return true;
+	}
+	// Tone mode
+	else
+	{
+		// Parse musical notes one by one
+		noteParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, ++lastNote, &noteStringParamLen);
+
+		if (noteParams == NULL) {
+			lastNote = 1;		// Reset this for next command
+			return false;
+		// Parse the musical note
+		} else {		
+			if (noteParams[0] == '[' && *(strchr(&noteParams[0],' ')-1) == ']') {	// silence note
+				*pFreq = 0;
+				*(strchr(&noteParams[0],' ')-1) = '\0';
+				*pLength = atoi(&noteParams[1]);
+			} else if (noteParams[0] == 'c') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Csharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[C][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "do", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[DOsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[DO][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'd') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Dsharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[D][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "re", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[REsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[RE][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'e') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[E][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[E][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "mi", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[MI][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[MI][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'f') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Fsharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[F][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "fa", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[FAsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[FA][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'g') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Gsharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[G][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "sol", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[SOLsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[SOL][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'a') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[Asharp][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[A][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "la", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[LAsharp][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[LA][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			} else if (noteParams[0] == 'b') {
+				octave = atoi(&noteParams[1]);
+				if (!octave)	octave = 5;
+				if (noteParams[2] == '#') {
+					*pFreq = notesFreq[B][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[B][octave-1];
+					*pLength = ParseNoteTime(2, noteParams, noteStringParamLen);
+				}
+			} else if (!strncmp(noteParams, "si", 2)) {
+				octave = atoi(&noteParams[2]);
+				if (!octave)	octave = 5;
+				if (noteParams[3] == '#') {
+					*pFreq = notesFreq[SI][octave-1];
+					*pLength = ParseNoteTime(4, noteParams, noteStringParamLen);					
+				} else {
+					*pFreq = notesFreq[SI][octave-1];
+					*pLength = ParseNoteTime(3, noteParams, noteStringParamLen);
+				}
+			}
+			
+			*toneMode = true;		// Use this flag to avoid comparing mode strings for each note
+			return true;
+		}
+	}
+}
+
+BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString)
+{
+	// TODO: Change variable names
+	char *modeParams = NULL;
+	portBASE_TYPE modeStringParamLen = 0;
+	float freq = 0, length = 0;
+	bool toneMode = false;
+	*pcWriteBuffer = '\0';
+	
+	do {
+		if (PlayCommandLineParser(pcCommandString, &modeParams, &modeStringParamLen, &freq, &length, &toneMode) == false)
+			break;
+		
+		if (toneMode || !strncmp(modeParams, toneModeString, max(strlen(toneModeString), modeStringParamLen))) {		// Loop over this mode until all notes are proccessed
+				PlaySine(freq, MusicNotesNumOfSamples, length);		
+		} else if (!strncmp(modeParams, sineModeString, max(strlen(sineModeString), modeStringParamLen))) {		// Execute this mode once
+				PlaySine(freq, MusicNotesNumOfSamples, length);
+				return pdFALSE;
+		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {		// Execute this mode once
+				PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000, (int32_t) freq, (uint16_t) length);
+				return pdFALSE;
+		} else {
+			strncat((char *)pcWriteBuffer, "Error: Invalid Params\r\n", xWriteBufferLen);
+			break;
+		}
+		
+	} while (1);
+	
+	return pdFALSE;
+}
 
 
 /*-----------------------------------------------------------*/

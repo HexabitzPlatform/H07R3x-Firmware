@@ -209,16 +209,19 @@ void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void)
   */
 void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 {
-	static uint32_t count;
+	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+
+	currentAudioDesc.numOfRepeats--;
 	
-	++count;
-	
-	if (count == NumberOfTuneWaves)
-	{
-		count = 0;
-		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+	if (currentAudioDesc.delay || (currentAudioDesc.numOfRepeats <= 0)) {
+
+		HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
+		HAL_TIM_Base_Stop(&htim6);
 		
-		vTaskNotifyGiveFromISR(FrontEndTaskHandle, &( xHigherPriorityTaskWoken ) );
+		vTaskNotifyGiveFromISR(AudioPlayTaskHandle, &(xHigherPriorityTaskWoken));
+		
+		if (xHigherPriorityTaskWoken)
+			taskYIELD();
 	}
 }
 
