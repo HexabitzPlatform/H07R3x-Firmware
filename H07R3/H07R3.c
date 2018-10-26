@@ -247,8 +247,11 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 */
 float ParseNoteTime(uint8_t start, char *noteParams, portBASE_TYPE noteStringParamLen)
 {
-	if (noteParams[start] == '[' && *(strchr(&noteParams[start],' ')-1) == ']') {
-		return atof(&noteParams[start+1]);
+	// Locate a space to find out if this is a single parameter or more
+	char *space = strchr(&noteParams[start-1],' ');
+	
+	if (noteParams[start-1] == '[' && (noteParams[noteStringParamLen-1] == ']' || (space != NULL && *(space-1) == ']')) ) {
+		return atof(&noteParams[start]);
 	} else {
 		return 1.0f;
 	}
@@ -483,7 +486,7 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 	} 
 
 	// Non-tone mode
-	if (strncmp(modeParams, toneModeString, max(strlen(toneModeString), modeStringParamLen)) != 0)
+	if (*toneMode == false && strncmp(modeParams, toneModeString, max(strlen(toneModeString), modeStringParamLen)) != 0)
 	{	
 		freqParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &freqStringParamLen);
 		lengthParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 3, &lengthStringParamLen);
