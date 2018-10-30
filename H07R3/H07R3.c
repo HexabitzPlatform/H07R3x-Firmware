@@ -133,30 +133,42 @@ const float notesFreq[12][9] = {	{16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1
 
 
 /* Private function prototypes -----------------------------------------------*/	
-
-BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
-																	
+bool TS4990_Init(void);
+bool TS4990_DeInit(void);																	
 bool AddAudioDescToPlaylist(AudioDesc_t *pDesc);
 bool PlayAudioNonBlock(AudioDesc_t *pDesc);
 void AudioPlayTask(void *argument);
 float ParseNoteTime(uint8_t start, char *noteParams, portBASE_TYPE noteStringParamLen);
-
+uint8_t LookupWave(char *name);
+																	
+BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+BaseType_t ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+																	
 /* Create CLI commands --------------------------------------------------------*/
-
+										
 static const CLI_Command_Definition_t PlayCommandDefination = {
 		(const int8_t *)"play",
-		(const int8_t *)"(H07R3) play:\r\n Syntax: play [tune]/[sine]/[wave] [note]/[freq] (file)\r\n \
+		(const int8_t *)"(H07R3) play:\r\n Syntax: play [tune]/[sine]/[wave] [note]/[freq]/[file]\r\n \
 Play a musical tune or a sine wave or a wave file.\n\r Musical notes are:\n\r Cx, Dx, Ex, Fx, Gx, Ax, Bx OR:\n\r \
 DOx, REx, MIx, FAx, SOLx, LAx, SIx where x is octave number 1 to 9\n\r - Separate musical notes by a space.\n\r \
 - Add # after the note to raise it by a semitone (half-step).\n\r \
 - Add note time in seconds with [t]. If ommited, default is t = 1.\n\r \
 - Add silence with [t] without a note.\n\r Examples:\n\r\t\
-DO4 RE4 MI4[2] FA4 SOL4[0.5] LA4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]\r\n",
+DO4 RE4 MI4[2] FA4 SOL4[0.5] LA4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]\r\n\r\n",
 		PlayCommand,
-		-1
+		-1,
 };
+
 /*-----------------------------------------------------------*/
 
+static const CLI_Command_Definition_t ListCommandDefination = {
+		(const int8_t *)"list",
+		(const int8_t *)"(H07R3) list:\r\n List embedded WAVE files\r\n\r\n",
+		ListCommand,
+		0,
+};
+
+/*-----------------------------------------------------------*/
 
 /* -----------------------------------------------------------------------
 	|												 Private Functions	 														|
@@ -219,6 +231,7 @@ void RegisterModuleCLICommands(void)
 {
 	// Todo: Check return values of register commands
 	FreeRTOS_CLIRegisterCommand(&PlayCommandDefination);
+	FreeRTOS_CLIRegisterCommand(&ListCommandDefination);
 }
 
 /*-----------------------------------------------------------*/
@@ -397,6 +410,20 @@ bool AddAudioToPlaylist(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeat
 
 /*-----------------------------------------------------------*/
 
+/* -- Lookup WAVE file index based on its name
+*/
+uint8_t LookupWave(char *name)
+{
+	for(uint8_t i=0 ; i<MAX_WAVES ; i++) {
+		if (!strcmp(waveName[i], name)) {
+			return i;
+		}
+	}
+	return	0;
+}
+
+/*-----------------------------------------------------------*/
+
 /* -----------------------------------------------------------------------
 	|																APIs	 																 	|
    ----------------------------------------------------------------------- 
@@ -463,11 +490,12 @@ bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
 
 /*-----------------------------------------------------------*/
 
-/* --- Play a WAVE Format Data. 
+/* --- Play an embedded WAVE Format Data. 
 */
-bool PlayWave(uint8_t *wave, uint32_t length, uint16_t rate, int32_t repeats, uint16_t delayInMs)
+bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs)
 {
-	return AddAudioToPlaylist((uint32_t *)wave, length, repeats, sizeof(wave[0]) * 8, rate, delayInMs);
+	uint8_t index = LookupWave(name);
+	return AddAudioToPlaylist(waveAdd[index], waveLength[index], repeats, waveResolution[index], 16000, delayInMs);
 }
 
 /*-----------------------------------------------------------*/
@@ -477,7 +505,6 @@ bool PlayWave(uint8_t *wave, uint32_t length, uint16_t rate, int32_t repeats, ui
    ----------------------------------------------------------------------- 
 */
 
-
 static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeString, 
 										portBASE_TYPE *pModeStrParamLen, float *pFreq, float *pLength, bool *tuneMode)
 {
@@ -485,6 +512,7 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 	char *freqParams = NULL;
 	char *lengthParams = NULL;
 	char *noteParams = NULL;
+	char *nameParams = NULL;
 	portBASE_TYPE modeStringParamLen = 0;
 	portBASE_TYPE freqStringParamLen = 0;
 	portBASE_TYPE lengthStringParamLen = 0;
@@ -501,9 +529,21 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 		*ppModeString = modeParams;
 		*pModeStrParamLen = modeStringParamLen;
 	} 
-
-	// Non-tune mode
-	if (*tuneMode == false && strncmp(modeParams, tuneModeString, max(strlen(tuneModeString), modeStringParamLen)) != 0)
+	
+	// Wave mode
+	if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen)))
+	{
+		// Parse WAVE name
+		nameParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &lengthStringParamLen);
+		if (nameParams == NULL)
+			return false;
+		
+		*pFreq = LookupWave(nameParams);
+		
+		return true;
+	}
+	// Sine mode
+	else if (*tuneMode == false && strncmp(modeParams, tuneModeString, max(strlen(tuneModeString), modeStringParamLen)) != 0)
 	{	
 		freqParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &freqStringParamLen);
 		lengthParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 3, &lengthStringParamLen);
@@ -521,11 +561,14 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 		// Parse musical notes one by one
 		noteParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, ++lastNote, &noteStringParamLen);
 
-		if (noteParams == NULL) {
+		if (noteParams == NULL) 
+		{
 			lastNote = 1;		// Reset this for next command
 			return false;
 		// Parse the musical note
-		} else {		
+		} 
+		else 
+		{		
 			if (noteParams[0] == '[') {	// silence note
 				if (strchr(&noteParams[0],' ') != NULL) {
 					*pFreq = 0;
@@ -682,6 +725,8 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 	}
 }
 
+/*-----------------------------------------------------------*/
+
 BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString)
 {
 	// TODO: Change variable names
@@ -701,7 +746,7 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 			PlaySine(freq, MusicNotesNumOfSamples, length);
 			return pdFALSE;
 		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {		// Execute this mode once
-			PlayWave((uint8_t *)waveByteCode_HiThere, WAVEBYTECODE_HITHERE_LENGTH, 16000, (int32_t) freq, (uint16_t) length);
+			AddAudioToPlaylist(waveAdd[(uint8_t)freq], waveLength[(uint8_t)freq], 0, waveResolution[(uint8_t)freq], 16000, 0);
 			return pdFALSE;
 		} else {
 			strncat((char *)pcWriteBuffer, "Error: Invalid Params\r\n", xWriteBufferLen);
@@ -716,5 +761,29 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 
 /*-----------------------------------------------------------*/
 
+BaseType_t ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString)
+{
+	const int8_t * const pcWavesTableHeader = ( int8_t * ) "\nName    Length (seconds)\r\n==================\r\n\n";
+	const int8_t * const pcWavesTableRow = ( int8_t * ) "%s%s    %.1f\r\n";
+	
+	/* Remove compile time warnings about unused parameters, and check the
+	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+	write buffer length is adequate, so does not check for buffer overflows. */
+	( void ) pcCommandString;
+	( void ) xWriteBufferLen;
+	configASSERT( pcWriteBuffer );
+
+	/* Respond to the command */
+	strcpy( ( char * ) pcWriteBuffer, ( char * ) pcWavesTableHeader );
+	for(uint8_t i=0 ; i<MAX_WAVES ; i++)
+	{
+		sprintf( ( char * ) pcWriteBuffer, ( char * ) pcWavesTableRow, ( char * ) pcWriteBuffer, waveName[i], (float)waveLength[i]*2/16000.0f);
+	}
+	strcat( ( char * ) pcWriteBuffer, "\n\r"); 
+	
+	/* There is no more data to return after this single string, so return
+	pdFALSE. */
+	return pdFALSE;	
+}
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/

@@ -42,6 +42,27 @@
 
 /* Private variables ---------------------------------------------------------*/
 
+/* Embedded wave variables */
+
+uint32_t *waveAdd[MAX_WAVES] =  {
+	(uint32_t *) &waveByteCode_HiThere[0],
+	(uint32_t *) &waveByteCode_HowAreYou[0],
+};
+
+const uint32_t waveLength[MAX_WAVES] =  {
+	WAVEBYTECODE_HITHERE_LENGTH,
+	WAVEBYTECODE_HOWAREYOU_LENGTH,
+};
+
+const uint32_t waveResolution[MAX_WAVES] =  {
+	WAVEBYTECODE_HITHERE_BPS,
+	WAVEBYTECODE_HOWAREYOU_BPS,
+};
+
+const char *waveName[MAX_WAVES] =  {		// Note wave name must be lower case
+	"hithere",
+	"howareyou",
+};
 
 /* Private function prototypes -----------------------------------------------*/
 

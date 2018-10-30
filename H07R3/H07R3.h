@@ -308,12 +308,10 @@ extern AudioDesc_t currentAudioDesc;
 	|																APIs	 																 	|
    ----------------------------------------------------------------------- 
 */
-
-bool TS4990_Init(void);
-bool TS4990_DeInit(void);
-
+bool PlayAudioNonBlock(AudioDesc_t *pDesc);
+void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate);
 bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds);
-bool PlayWave(uint8_t *wave, uint32_t length, uint16_t rate, int32_t repeats, uint16_t delayInMs);
+bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs);
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|
