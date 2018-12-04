@@ -59,6 +59,11 @@ const uint32_t waveResolution[MAX_WAVES] =  {
 	WAVEBYTECODE_HOWAREYOU_BPS,
 };
 
+const uint32_t waveRate[MAX_WAVES] =  {
+	WAVEBYTECODE_HITHERE_SPS,
+	WAVEBYTECODE_HOWAREYOU_SPS,
+};
+
 const char *waveName[MAX_WAVES] =  {		// Note wave name must be lower case
 	"hithere",
 	"howareyou",

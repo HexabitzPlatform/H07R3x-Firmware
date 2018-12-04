@@ -52,8 +52,8 @@ const char tuneModeString[] = "tune";
 
 #if (MusicNotesNumOfSamples == 10)
 /* 10 samples 12-bit amplitude sine wave: 1.650, 2.620, 3.219, 3.220, 2.622, 1.653, 0.682, 0.081, 0.079, 0.676 */
-//const uint16_t sineDigital[10] = {2048, 3251, 3995, 3996, 3253, 2051, 847, 101, 98, 839};
-const uint16_t sineDigital[10] = {120,179,205,205,179,120,61,25,25,61};
+const uint16_t sineDigital[10] = {2048, 3251, 3995, 3996, 3253, 2051, 847, 101, 98, 839};
+//const uint16_t sineDigital[10] = {120,179,205,205,179,120,61,25,25,61};
 #elif (MusicNotesNumOfSamples == 100)
 /* 100 samples 12-bit amplitude sine wave <<http://www.daycounter.com/Calculators/Sine-Generator-Calculator.phtml>> */
 const uint16_t sineDigital[100] = {
@@ -483,8 +483,7 @@ bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
 	if (!freq) {			// Play silence
 		return AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, 1, 0, 0, durationInSeconds * 1000);			
 	} else {					// Play a note
-		return AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, 
-																										sizeof(sineDigital[0]) * 8, freq * NumOfSamples, 0);		
+		return AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, 12, freq * NumOfSamples, 0);		
 	}	
 }
 
@@ -495,7 +494,7 @@ bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
 bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs)
 {
 	uint8_t index = LookupWave(name);
-	return AddAudioToPlaylist(waveAdd[index], waveLength[index], repeats, waveResolution[index], 16000, delayInMs);
+	return AddAudioToPlaylist(waveAdd[index], waveLength[index], repeats, waveResolution[index], waveRate[index], delayInMs);
 }
 
 /*-----------------------------------------------------------*/
