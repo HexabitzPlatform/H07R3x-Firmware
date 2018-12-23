@@ -87,6 +87,8 @@
 
 #define MusicNotesNumOfSamples	10
 
+#define NUM_MODULE_PARAMS		1
+
 /* H01R0_Status Type Definition */  
 typedef enum 
 {

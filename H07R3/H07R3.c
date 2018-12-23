@@ -30,6 +30,9 @@ UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart5;
 
+/* Module exported parameters ------------------------------------------------*/
+module_param_t modParam[NUM_MODULE_PARAMS] = {{.paramPtr=NULL, .paramFormat=FMT_FLOAT, .paramName=""}};
+
 AudioDesc_t currentAudioDesc;
 
 typedef enum audioPlayTaskState_e {
@@ -141,12 +144,13 @@ void AudioPlayTask(void *argument);
 float ParseNoteTime(uint8_t start, char *noteParams, portBASE_TYPE noteStringParamLen);
 uint8_t LookupWave(char *name);
 																	
-BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
-BaseType_t ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+static portBASE_TYPE PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+static portBASE_TYPE ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+static portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 																	
 /* Create CLI commands --------------------------------------------------------*/
 										
-static const CLI_Command_Definition_t PlayCommandDefination = {
+static const CLI_Command_Definition_t PlayCommandDefinition = {
 		(const int8_t *)"play",
 		(const int8_t *)"(H07R3) play:\r\n Syntax: play [tune]/[sine]/[wave] [note]/[freq]/[file]\r\n \
 Play a musical tune or a sine wave or a wave file.\n\r Musical notes are:\n\r Cx, Dx, Ex, Fx, Gx, Ax, Bx OR:\n\r \
@@ -161,13 +165,22 @@ DO4 RE4 MI4[2] FA4 SOL4[0.5] LA4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]\r\n\r\n
 
 /*-----------------------------------------------------------*/
 
-static const CLI_Command_Definition_t ListCommandDefination = {
+static const CLI_Command_Definition_t ListCommandDefinition = {
 		(const int8_t *)"list",
 		(const int8_t *)"(H07R3) list:\r\n List embedded WAVE files\r\n\r\n",
 		ListCommand,
 		0,
 };
 
+/*-----------------------------------------------------------*/
+
+const CLI_Command_Definition_t demoCommandDefinition =
+{
+	( const int8_t * ) "demo", /* The command string to type. */
+	( const int8_t * ) "(H07R3) demo:\r\n Run a demo program to test module functionality\r\n\r\n",
+	demoCommand, /* The function to run. */
+	0 /* No parameters are expected. */
+};
 /*-----------------------------------------------------------*/
 
 /* -----------------------------------------------------------------------
@@ -230,8 +243,9 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 void RegisterModuleCLICommands(void)
 {
 	// Todo: Check return values of register commands
-	FreeRTOS_CLIRegisterCommand(&PlayCommandDefination);
-	FreeRTOS_CLIRegisterCommand(&ListCommandDefination);
+	FreeRTOS_CLIRegisterCommand(&PlayCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&ListCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&demoCommandDefinition);
 }
 
 /*-----------------------------------------------------------*/
@@ -784,5 +798,25 @@ BaseType_t ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 	pdFALSE. */
 	return pdFALSE;	
 }
+
+/*-----------------------------------------------------------*/
+
+portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	/* Remove compile time warnings about unused parameters, and check the
+	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+	write buffer length is adequate, so does not check for buffer overflows. */
+	( void ) pcCommandString;
+	( void ) xWriteBufferLen;
+	configASSERT( pcWriteBuffer );
+
+	C5(0.25); D5(0.25); E5(0.25); F5(0.25); G5(0.25); A5(0.25); B5(0.25);
+			
+	/* There is no more data to return after this single string, so return
+	pdFALSE. */
+	return pdFALSE;
+}
+
+/*-----------------------------------------------------------*/
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/
