@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.1.5 - Copyright (C) 2017-2018 Hexabitz
+    BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 
     File Name     : H07R3.c
@@ -30,6 +30,9 @@ UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart5;
 
+/* Module exported parameters ------------------------------------------------*/
+module_param_t modParam[NUM_MODULE_PARAMS] = {{.paramPtr=NULL, .paramFormat=FMT_FLOAT, .paramName=""}};
+
 AudioDesc_t currentAudioDesc;
 
 typedef enum audioPlayTaskState_e {
@@ -52,8 +55,8 @@ const char tuneModeString[] = "tune";
 
 #if (MusicNotesNumOfSamples == 10)
 /* 10 samples 12-bit amplitude sine wave: 1.650, 2.620, 3.219, 3.220, 2.622, 1.653, 0.682, 0.081, 0.079, 0.676 */
-//const uint16_t sineDigital[10] = {2048, 3251, 3995, 3996, 3253, 2051, 847, 101, 98, 839};
-const uint16_t sineDigital[10] = {120,179,205,205,179,120,61,25,25,61};
+const uint16_t sineDigital[10] = {2048, 3251, 3995, 3996, 3253, 2051, 847, 101, 98, 839};
+//const uint16_t sineDigital[10] = {120,179,205,205,179,120,61,25,25,61};
 #elif (MusicNotesNumOfSamples == 100)
 /* 100 samples 12-bit amplitude sine wave <<http://www.daycounter.com/Calculators/Sine-Generator-Calculator.phtml>> */
 const uint16_t sineDigital[100] = {
@@ -141,12 +144,13 @@ void AudioPlayTask(void *argument);
 float ParseNoteTime(uint8_t start, char *noteParams, portBASE_TYPE noteStringParamLen);
 uint8_t LookupWave(char *name);
 																	
-BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
-BaseType_t ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+static portBASE_TYPE PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+static portBASE_TYPE ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
+static portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 																	
 /* Create CLI commands --------------------------------------------------------*/
 										
-static const CLI_Command_Definition_t PlayCommandDefination = {
+static const CLI_Command_Definition_t PlayCommandDefinition = {
 		(const int8_t *)"play",
 		(const int8_t *)"(H07R3) play:\r\n Syntax: play [tune]/[sine]/[wave] [note]/[freq]/[file]\r\n \
 Play a musical tune or a sine wave or a wave file.\n\r Musical notes are:\n\r Cx, Dx, Ex, Fx, Gx, Ax, Bx OR:\n\r \
@@ -161,13 +165,22 @@ DO4 RE4 MI4[2] FA4 SOL4[0.5] LA4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]\r\n\r\n
 
 /*-----------------------------------------------------------*/
 
-static const CLI_Command_Definition_t ListCommandDefination = {
+static const CLI_Command_Definition_t ListCommandDefinition = {
 		(const int8_t *)"list",
 		(const int8_t *)"(H07R3) list:\r\n List embedded WAVE files\r\n\r\n",
 		ListCommand,
 		0,
 };
 
+/*-----------------------------------------------------------*/
+
+const CLI_Command_Definition_t demoCommandDefinition =
+{
+	( const int8_t * ) "demo", /* The command string to type. */
+	( const int8_t * ) "(H07R3) demo:\r\n Run a demo program to test module functionality\r\n\r\n",
+	demoCommand, /* The function to run. */
+	0 /* No parameters are expected. */
+};
 /*-----------------------------------------------------------*/
 
 /* -----------------------------------------------------------------------
@@ -230,8 +243,9 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 void RegisterModuleCLICommands(void)
 {
 	// Todo: Check return values of register commands
-	FreeRTOS_CLIRegisterCommand(&PlayCommandDefination);
-	FreeRTOS_CLIRegisterCommand(&ListCommandDefination);
+	FreeRTOS_CLIRegisterCommand(&PlayCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&ListCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&demoCommandDefinition);
 }
 
 /*-----------------------------------------------------------*/
@@ -483,8 +497,7 @@ bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
 	if (!freq) {			// Play silence
 		return AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, 1, 0, 0, durationInSeconds * 1000);			
 	} else {					// Play a note
-		return AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, 
-																										sizeof(sineDigital[0]) * 8, freq * NumOfSamples, 0);		
+		return AddAudioToPlaylist((uint32_t *)sineDigital, NumOfSamples, freq * durationInSeconds, 12, freq * NumOfSamples, 0);		
 	}	
 }
 
@@ -495,7 +508,7 @@ bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds)
 bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs)
 {
 	uint8_t index = LookupWave(name);
-	return AddAudioToPlaylist(waveAdd[index], waveLength[index], repeats, waveResolution[index], 16000, delayInMs);
+	return AddAudioToPlaylist(waveAdd[index], waveLength[index], repeats, waveResolution[index], waveRate[index], delayInMs);
 }
 
 /*-----------------------------------------------------------*/
@@ -785,5 +798,25 @@ BaseType_t ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 	pdFALSE. */
 	return pdFALSE;	
 }
+
+/*-----------------------------------------------------------*/
+
+portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	/* Remove compile time warnings about unused parameters, and check the
+	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+	write buffer length is adequate, so does not check for buffer overflows. */
+	( void ) pcCommandString;
+	( void ) xWriteBufferLen;
+	configASSERT( pcWriteBuffer );
+
+	C5(0.25); D5(0.25); E5(0.25); F5(0.25); G5(0.25); A5(0.25); B5(0.25);
+			
+	/* There is no more data to return after this single string, so return
+	pdFALSE. */
+	return pdFALSE;
+}
+
+/*-----------------------------------------------------------*/
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/

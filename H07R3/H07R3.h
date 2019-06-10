@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.1.5 - Copyright (C) 2017-2018 Hexabitz
+    BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 		
     File Name     : H07R3.c
@@ -86,6 +86,8 @@
 #define	_DAC_PORT				GPIOA
 
 #define MusicNotesNumOfSamples	10
+
+#define NUM_MODULE_PARAMS		1
 
 /* H01R0_Status Type Definition */  
 typedef enum 
