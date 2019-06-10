@@ -32,7 +32,7 @@
   */
 	
 /*
-		MODIFIED by Hexabitz for BitzOS (BOS) V0.1.5 - Copyright (C) 2017-2018 Hexabitz
+		MODIFIED by Hexabitz for BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 */
 
@@ -101,23 +101,28 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
-  while (1) {
+  while (1)
+  {
 
 
   }
+
+
 }
 
 /*-----------------------------------------------------------*/
 
-/* FrontEndTask function */
-void FrontEndTask(void * argument)
+/* User Task */
+void UserTask(void * argument)
 {
+
+	
   /* Infinite loop */
-  for(;;) {
-		
+  for(;;)
+  {
+
 	}
 }
-
 
 /*-----------------------------------------------------------*/
 
