@@ -304,6 +304,7 @@ extern AudioDesc_t currentAudioDesc;
 
 #define CODE_H07R3_PLAY_SINE							800
 #define CODE_H07R3_PLAY_WAVE							801
+#define CODE_H07R3_PLAY_Tone							802
 
 	
 /* -----------------------------------------------------------------------
