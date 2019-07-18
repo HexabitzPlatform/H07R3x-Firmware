@@ -551,7 +551,7 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 	} 
 	
 	// Wave mode
-	if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen)))
+	if (!strncmp(modeParams, waveModeString, fmax(strlen(waveModeString), modeStringParamLen)))
 	{
 		// Parse WAVE name
 		nameParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &lengthStringParamLen);
@@ -563,7 +563,7 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 		return true;
 	}
 	// Sine mode
-	else if (*tuneMode == false && strncmp(modeParams, tuneModeString, max(strlen(tuneModeString), modeStringParamLen)) != 0)
+	else if (*tuneMode == false && strncmp(modeParams, tuneModeString, fmax(strlen(tuneModeString), modeStringParamLen)) != 0)
 	{	
 		freqParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &freqStringParamLen);
 		lengthParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 3, &lengthStringParamLen);
@@ -760,12 +760,12 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 		if (PlayCommandLineParser(pcCommandString, &modeParams, &modeStringParamLen, &freq, &length, &tuneMode) == false)
 			break;
 		
-		if (tuneMode || !strncmp(modeParams, tuneModeString, max(strlen(tuneModeString), modeStringParamLen))) {		// Loop over this mode until all notes are proccessed
+		if (tuneMode || !strncmp(modeParams, tuneModeString, fmax(strlen(tuneModeString), modeStringParamLen))) {		// Loop over this mode until all notes are proccessed
 			PlaySine(freq, MusicNotesNumOfSamples, length);		
-		} else if (!strncmp(modeParams, sineModeString, max(strlen(sineModeString), modeStringParamLen))) {		// Execute this mode once
+		} else if (!strncmp(modeParams, sineModeString, fmax(strlen(sineModeString), modeStringParamLen))) {		// Execute this mode once
 			PlaySine(freq, MusicNotesNumOfSamples, length);
 			return pdFALSE;
-		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {		// Execute this mode once
+		} else if (!strncmp(modeParams, waveModeString, fmax(strlen(waveModeString), modeStringParamLen))) {		// Execute this mode once
 			AddAudioToPlaylist(waveAdd[(uint8_t)freq], waveLength[(uint8_t)freq], 0, waveResolution[(uint8_t)freq], 16000, 0);
 			return pdFALSE;
 		} else {
