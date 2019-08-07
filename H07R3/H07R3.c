@@ -303,7 +303,7 @@ bool TS4990_Init(void)
 		return false;
 	
 	if (xTaskCreate(AudioPlayTask, (const char *)"AudioPlayTask", (2 * configMINIMAL_STACK_SIZE), 
-									NULL, osPriorityNormal, &AudioPlayTaskHandle) != pdPASS)
+									NULL, osPriorityNormal-osPriorityIdle, &AudioPlayTaskHandle) != pdPASS)
 		return false;
 	
 	TS4990_ENABLE();
