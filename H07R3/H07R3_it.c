@@ -189,9 +189,9 @@ void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void)
 	/* Streaming or messaging DMA on P4 */
 	} else if (HAL_DMA_GET_IT_SOURCE(DMA1,DMA_ISR_GIF6) == SET) {
 		DMA_IRQHandler(P4);
-	/* Streaming or messaging DMA on P6 */
+	/* DAC Ch1 DMA */
 	} else if (HAL_DMA_GET_IT_SOURCE(DMA2,DMA_ISR_GIF3) == SET) {
-		DMA_IRQHandler(P6);
+		HAL_DMA_IRQHandler(hdac.DMA_Handle1);
 	/* TX messaging DMA 1 */
 	} else if (HAL_DMA_GET_IT_SOURCE(DMA1,DMA_ISR_GIF4) == SET) {
 		HAL_DMA_IRQHandler(&msgTxDMA[1]);
@@ -199,6 +199,29 @@ void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void)
 	} else if (HAL_DMA_GET_IT_SOURCE(DMA1,DMA_ISR_GIF7) == SET) {
 		HAL_DMA_IRQHandler(&msgTxDMA[2]);
 	}
+}
+
+/*-----------------------------------------------------------*/
+
+/**
+  * @brief  Conversion complete callback in non blocking mode for Channel1 
+  */
+void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
+{
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+
+    currentAudioDesc.numOfRepeats--;
+    
+    if (currentAudioDesc.delay || (currentAudioDesc.numOfRepeats <= 0)) {
+
+        HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
+        HAL_TIM_Base_Stop(&htim6);
+        
+        vTaskNotifyGiveFromISR(AudioPlayTaskHandle, &(xHigherPriorityTaskWoken));
+        
+        if (xHigherPriorityTaskWoken)
+            taskYIELD();
+		}
 }
 
 /*-----------------------------------------------------------*/

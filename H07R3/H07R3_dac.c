@@ -101,8 +101,8 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
 	  /* Start timer 6 */
     HAL_TIM_Base_Start(&htim6);
 		
-    /* DAC DMA 1 Ch 3 init*/
-    hdma_dac_ch1.Instance = DMA1_Channel3;
+    /* DAC DMA 2 Ch 3 init */
+    hdma_dac_ch1.Instance = DMA2_Channel3;
     hdma_dac_ch1.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_dac_ch1.Init.PeriphInc = DMA_PINC_DISABLE;
     hdma_dac_ch1.Init.MemInc = DMA_MINC_ENABLE;
@@ -112,13 +112,13 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
     hdma_dac_ch1.Init.Priority = DMA_PRIORITY_MEDIUM;
     HAL_DMA_Init(&hdma_dac_ch1);
 
-    __HAL_DMA1_REMAP(HAL_DMA1_CH3_DAC_CH1);
+    __HAL_DMA2_REMAP(HAL_DMA2_CH3_DAC_CH1);
 
     __HAL_LINKDMA(hdac,DMA_Handle1,hdma_dac_ch1);
 		
 		/* DMA interrupt init */
-		HAL_NVIC_SetPriority(DMA1_Ch2_3_DMA2_Ch1_2_IRQn, 1, 0);
-		HAL_NVIC_EnableIRQ(DMA1_Ch2_3_DMA2_Ch1_2_IRQn);
+		HAL_NVIC_SetPriority(DMA1_Ch4_7_DMA2_Ch3_5_IRQn, 1, 0);
+		HAL_NVIC_EnableIRQ(DMA1_Ch4_7_DMA2_Ch3_5_IRQn);
 		
   }
 }
