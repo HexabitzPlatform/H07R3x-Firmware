@@ -152,7 +152,7 @@ static portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen,
 										
 static const CLI_Command_Definition_t PlayCommandDefinition = {
 		(const int8_t *)"play",
-		(const int8_t *)"(H07R3) play:\r\n Syntax: play [tune]/[sine]/[wave] [note]/[freq]/[file]\r\n \
+		(const int8_t *)"play:\r\n Syntax: play [tune]/[sine]/[wave] [note]/[freq]/[file]\r\n \
 Play a musical tune or a sine wave or a wave file.\n\r Musical notes are:\n\r Cx, Dx, Ex, Fx, Gx, Ax, Bx OR:\n\r \
 DOx, REx, MIx, FAx, SOLx, LAx, SIx where x is octave number 1 to 9\n\r - Separate musical notes by a space.\n\r \
 - Add # after the note to raise it by a semitone (half-step).\n\r \
@@ -167,7 +167,7 @@ DO4 RE4 MI4[2] FA4 SOL4[0.5] LA4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]\r\n\r\n
 
 static const CLI_Command_Definition_t ListCommandDefinition = {
 		(const int8_t *)"list",
-		(const int8_t *)"(H07R3) list:\r\n List embedded WAVE files\r\n\r\n",
+		(const int8_t *)"list:\r\n List embedded WAVE files\r\n\r\n",
 		ListCommand,
 		0,
 };
@@ -177,7 +177,7 @@ static const CLI_Command_Definition_t ListCommandDefinition = {
 const CLI_Command_Definition_t demoCommandDefinition =
 {
 	( const int8_t * ) "demo", /* The command string to type. */
-	( const int8_t * ) "(H07R3) demo:\r\n Run a demo program to test module functionality\r\n\r\n",
+	( const int8_t * ) "demo:\r\n Run a demo program to test module functionality\r\n\r\n",
 	demoCommand, /* The function to run. */
 	0 /* No parameters are expected. */
 };
