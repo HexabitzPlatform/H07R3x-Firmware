@@ -14,20 +14,37 @@
  extern "C" {
 #endif
 
-/* Memory map: - STM32F091CB
+/* Memory map: - STM32F091CB - 128KB Flash
 				- Application: 0x08000000 - 0x0801D7FF >> 118 KB
 		 - Read-only (RO): 0x0801D800 - 0x0801DFFF >> 2 KB, used to store topology information and Command Snippets
 		- Emulated EEPROM: 0x0801E000 - 0x0801FFFF >> 8 KB, fits 1024 16-bit variables in 2 main-duplicate pages (A and B)
 */
-#define APP_START_ADDRESS  		((uint32_t)0x08000000) 
-#define RO_START_ADDRESS  		((uint32_t)0x0801D800) 
-#define RO_MID_ADDRESS  			((uint32_t)0x0801DC00) 	// Snippets are stored here
-#define EEPROM_START_ADDRESS  ((uint32_t)0x0801E000) 
-#define FLASH_SIZE						((uint32_t)0x20000)			// All sizes in bytes
-#define SRAM_SIZE							((uint32_t)0x8000)
-#define PAGE_SIZE             ((uint32_t)0x0800)  		/* Page size = 2KByte for STM32F07x and STM32F09x devices */
-#define NumOfPages						(FLASH_SIZE/PAGE_SIZE)
+#ifdef H07R30
+	#define APP_START_ADDRESS  		((uint32_t)0x08000000) 
+	#define RO_START_ADDRESS  		((uint32_t)0x0801D800) 
+	#define RO_MID_ADDRESS  			((uint32_t)0x0801DC00) 	// Snippets are stored here
+	#define EEPROM_START_ADDRESS  ((uint32_t)0x0801E000) 
+	#define FLASH_SIZE						((uint32_t)0x20000)			// All sizes in bytes
+	#define SRAM_SIZE							((uint32_t)0x8000)
+	#define PAGE_SIZE             ((uint32_t)0x0800)  		/* Page size = 2KByte for STM32F07x and STM32F09x devices */
+	#define NumOfPages						(FLASH_SIZE/PAGE_SIZE)
+#endif
 
+/* Memory map: - STM32F091CC - 256 KB Flash
+				- Application: 0x08000000 - 0x0803D7FF >> 246 KB
+		 - Read-only (RO): 0x0803D800 - 0x0803DFFF >> 2 KB, used to store topology information and Command Snippets
+		- Emulated EEPROM: 0x0803E000 - 0x0803FFFF >> 8 KB, fits 1024 16-bit variables in 2 main-duplicate pages (A and B)
+*/
+#ifdef H07R31
+	#define APP_START_ADDRESS  		((uint32_t)0x08000000) 
+	#define RO_START_ADDRESS  		((uint32_t)0x0803D800) 
+	#define RO_MID_ADDRESS  			((uint32_t)0x0803DC00) 	// Snippets are stored here
+	#define EEPROM_START_ADDRESS  ((uint32_t)0x0803E000) 
+	#define FLASH_SIZE						((uint32_t)0x40000)			// All sizes in bytes
+	#define SRAM_SIZE							((uint32_t)0x8000)
+	#define PAGE_SIZE             ((uint32_t)0x0800)  		/* Page size = 2KByte for STM32F07x and STM32F09x devices */
+	#define NumOfPages						(FLASH_SIZE/PAGE_SIZE)
+#endif
 
 
 #ifdef __cplusplus
