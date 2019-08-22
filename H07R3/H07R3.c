@@ -210,29 +210,29 @@ void Module_Init(void)
 
 /* --- H07R3 message processing task. 
 */
-Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst)
+Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst, uint8_t shift)
 {
 	Module_Status result = H07R3_OK;
 	uint16_t temp16;
-	
+
 	switch (code) {
 		case CODE_H07R3_PLAY_SINE:
 		{
 			float freq = 0.0;
-			freq = (float)( (uint32_t) cMessage[port-1][4] << 24 ) + ( (uint32_t) cMessage[port-1][5] << 16 ) + ( (uint32_t) cMessage[port-1][6] << 8 ) + cMessage[port-1][7];
-			PlaySine(freq, cMessage[port-1][8], (float) cMessage[port-1][9] / 16.0f);
+			freq = (float)(( (uint32_t) cMessage[port-1][shift] << 24 ) + ( (uint32_t) cMessage[port-1][shift+1] << 16 ) + ( (uint32_t) cMessage[port-1][shift+2] << 8 ) + cMessage[port-1][shift+3]);
+				PlaySine(freq, cMessage[port-1][shift+4], (float) cMessage[port-1][shift+5] / 16.0f); // time division 16
 			break;
 		}
 		case CODE_H07R3_PLAY_WAVE:
 		{
-			temp16 = (((uint16_t)cMessage[port-1][5])<<8) + (uint16_t)cMessage[port-1][6];
+			temp16 = (((uint16_t)cMessage[port-1][shift+1])<<8) + (uint16_t)cMessage[port-1][shift+2];
 			cMessage[port-1][messageLength[port-1]-1] = 0; 	// Terminate the wave name string
-			PlayWave((char *)&cMessage[port-1][7], cMessage[port-1][4], temp16);
+			PlayWave((char *)&cMessage[port-1][shift+3], cMessage[port-1][shift], temp16);//1st parameter repeat time ,2nd & 3rd parameter for Delay time , and for WAV name for the latest parameters
 			break;
 		}
-		case CODE_H07R3_PLAY_Tone://notesFreq[note][octave]
+		case CODE_H07R3_PLAY_TUNE://notesFreq[note][octave]
 		{
-			PlaySine(notesFreq[cMessage[port-1][4]][cMessage[port-1][5]], MusicNotesNumOfSamples, (float) cMessage[port-1][6] / 16.0f);
+			PlaySine(notesFreq[cMessage[port-1][shift]][cMessage[port-1][shift+1]], MusicNotesNumOfSamples, (float) cMessage[port-1][shift+2] / 16.0f);// time division 16
 		 	break;
 		}
 		default:
