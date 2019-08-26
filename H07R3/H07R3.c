@@ -226,7 +226,7 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 		case CODE_H07R3_PLAY_WAVE:
 		{
 			temp16 = (((uint16_t)cMessage[port-1][shift+1])<<8) + (uint16_t)cMessage[port-1][shift+2];
-			cMessage[port-1][messageLength[port-1]-1] = 0; 	// Terminate the wave name string
+			cMessage[port-1][messageLength[port-1]] = 0; 	// Terminate the wave name string
 			PlayWave((char *)&cMessage[port-1][shift+3], cMessage[port-1][shift], temp16);//1st parameter repeat time ,2nd & 3rd parameter for Delay time , and for WAV name for the latest parameters
 			break;
 		}
