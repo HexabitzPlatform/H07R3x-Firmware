@@ -360,23 +360,20 @@ void AudioPlayTask(void *argument)
 			}
 			case STATE_PLAY_AUDIO:
 			{
-				if (currentAudioDesc.delay && (currentAudioDesc.numOfRepeats > 0)) {
-					state = STATE_WAIT;
-				} else {
-					state = STATE_DEQUE;			
 					if (PlayAudioNonBlock(&currentAudioDesc) == false) {
 						// TODO: Add a delay
 						break;
 					}
 					/* Wait indefinitly until DMA transfer is finished */
 					ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-				}		
+				if (currentAudioDesc.delay && (currentAudioDesc.numOfRepeats > 0)) {
+					state = STATE_WAIT;
+				} else { state = STATE_DEQUE;}		
 				break;
 			}
 			case STATE_WAIT:
 			{
-				Delay_ms(currentAudioDesc.delay);	
-				currentAudioDesc.numOfRepeats--;			
+				Delay_ms(currentAudioDesc.delay);				
 				if (currentAudioDesc.numOfRepeats > 0)
 					state = STATE_PLAY_AUDIO;
 				else
