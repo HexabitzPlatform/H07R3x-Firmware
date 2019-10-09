@@ -49,6 +49,9 @@ TaskHandle_t AudioPlayTaskHandle = NULL;
 TaskHandle_t playTask = NULL;
 bool isInitilized = false;
 
+uint32_t WAVE_SIZE ;
+uint32_t SAMPLERATE;
+
 const char sineModeString[] = "sine";
 const char waveModeString[] = "wave";
 const char tuneModeString[] = "tune";
@@ -235,6 +238,10 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 			PlaySine(notesFreq[cMessage[port-1][shift]][cMessage[port-1][shift+1]], MusicNotesNumOfSamples, (float) cMessage[port-1][shift+2] / 16.0f);// time division 16
 		 	break;
 		}
+		case CODE_H07R3_SCAN_WAVE:
+				WAVE_SIZE = (uint32_t)(cMessage[port-1][shift]<<24) + (uint32_t) (cMessage[port-1][shift+1]<<16) + (uint32_t) (cMessage[port-1][shift+2]<<8) + (uint32_t) cMessage[port-1][shift+3];
+				SAMPLERATE = (uint32_t) (cMessage[port-1][shift+4]<<24) + (uint32_t) (cMessage[port-1][shift+5]<<16) + (uint32_t) (cMessage[port-1][shift+6]<<8) +(uint32_t)  cMessage[port-1][shift+7];
+		break;
 		default:
 			result = H07R3_ERR_UnknownMessage;
 			break;

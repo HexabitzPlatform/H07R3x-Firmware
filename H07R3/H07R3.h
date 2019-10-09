@@ -281,6 +281,8 @@ extern void MX_USART2_UART_Init(void);
 extern void MX_USART3_UART_Init(void);
 extern void MX_USART4_UART_Init(void);
 extern void MX_USART5_UART_Init(void);
+extern uint32_t WAVE_SIZE ;
+extern uint32_t SAMPLERATE;
 
 #define AUDIO_DESC_QUE_SIZE								100
 
