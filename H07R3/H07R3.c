@@ -14,7 +14,7 @@
 			>> DAC_OUT 1 for TS4990IST.
 			>> DMA1 Ch3 for DAC Ch 1 DMA.
 			>> PB0 for TS4990IST STDBY.
-			>> Timer 6 for DAC Ch 1 trigger.
+			>> Timer 2 to control audio rate (sample per second).
 			
 */
 	
@@ -449,13 +449,13 @@ uint8_t LookupWave(char *name)
 
 bool PlayAudioNonBlock(AudioDesc_t *pDesc)
 {
-	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
-	HAL_TIM_Base_Stop(&htim6);
+	/* Setup Tim 2: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
+	HAL_TIM_Base_Stop(&htim2);
 	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
 	
-	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t)(((SystemCoreClock / pDesc->rate) / 2) - 1);
-	HAL_TIM_Base_Start(&htim6);
+	htim2.Instance->ARR = (uint32_t)(((SystemCoreClock / pDesc->rate) / 2) - 1);
+	htim2.Instance->PSC = 1;
+	HAL_TIM_Base_Start(&htim2);
 	
 	uint32_t alignment = DAC_ALIGN_8B_R;
 	if (pDesc->numOfBitsInACode > 8)
@@ -475,13 +475,13 @@ void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_
 	// NumberOfTuneWaves = numOfRepeats;
 	playTask = xTaskGetCurrentTaskHandle();
 	
-	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
-	HAL_TIM_Base_Stop(&htim6);
+	/* Setup Tim 2: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
+	HAL_TIM_Base_Stop(&htim2);
 	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
 	
-	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t)(((SystemCoreClock / rate) / 2) - 1);
-	HAL_TIM_Base_Start(&htim6);
+	htim2.Instance->ARR = (uint32_t)(((SystemCoreClock / rate) / 2) - 1);
+	htim2.Instance->PSC = 1;
+	HAL_TIM_Base_Start(&htim2);
 	
 	uint32_t alignment = DAC_ALIGN_8B_R;
 	if (dataPointSize > 8)
@@ -763,7 +763,7 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 			PlaySine(freq, MusicNotesNumOfSamples, length);
 			return pdFALSE;
 		} else if (!strncmp(modeParams, waveModeString, fmax(strlen(waveModeString), modeStringParamLen))) {		// Execute this mode once
-			AddAudioToPlaylist(waveAdd[(uint8_t)freq], waveLength[(uint8_t)freq], 0, waveResolution[(uint8_t)freq], 16000, 0);
+			AddAudioToPlaylist(waveAdd[(uint8_t)freq], waveLength[(uint8_t)freq], 0, waveResolution[(uint8_t)freq], waveRate[(uint8_t)freq], 0);		// freq is used to pass in wave index
 			return pdFALSE;
 		} else {
 			strncat((char *)pcWriteBuffer, "Error: Invalid Params\r\n", xWriteBufferLen);

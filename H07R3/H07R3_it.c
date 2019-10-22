@@ -215,7 +215,7 @@ void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
     if (currentAudioDesc.delay || (currentAudioDesc.numOfRepeats <= 0)) {
 
         HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
-        HAL_TIM_Base_Stop(&htim6);
+        HAL_TIM_Base_Stop(&htim2);
         
         vTaskNotifyGiveFromISR(AudioPlayTaskHandle, &(xHigherPriorityTaskWoken));
         

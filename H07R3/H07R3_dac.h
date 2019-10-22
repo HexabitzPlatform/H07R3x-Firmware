@@ -50,7 +50,7 @@
 
 	 
 extern DAC_HandleTypeDef hdac;
-extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim2;
 	 
 extern void MX_DAC_Init(void);
 	 
