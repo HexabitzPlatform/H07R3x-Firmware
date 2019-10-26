@@ -16,8 +16,8 @@
 #define WAVEBYTECODE_HITHERE_BPS							8
 
 /* Rate of embedded waves (sample per second) */
-#define WAVEBYTECODE_HOWAREYOU_SPS 						22050
-#define WAVEBYTECODE_HITHERE_SPS							22050
+#define WAVEBYTECODE_HOWAREYOU_SPS 						16000
+#define WAVEBYTECODE_HITHERE_SPS							16000
 
 /* Export embedded waves definition */
 extern const uint8_t waveByteCode_HiThere[WAVEBYTECODE_HITHERE_LENGTH];
