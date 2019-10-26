@@ -238,7 +238,7 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 			PlaySine(notesFreq[cMessage[port-1][shift]][cMessage[port-1][shift+1]], MusicNotesNumOfSamples, (float) cMessage[port-1][shift+2] / 16.0f);// time division 16
 		 	break;
 		}
-		case CODE_H07R3_SCAN_WAVE:
+		case CODE_H07R3_SCAN_WAVE_RESPONSE:
 				WAVE_SIZE = (uint32_t)(cMessage[port-1][shift]<<24) + (uint32_t) (cMessage[port-1][shift+1]<<16) + (uint32_t) (cMessage[port-1][shift+2]<<8) + (uint32_t) cMessage[port-1][shift+3];
 				SAMPLERATE = (uint32_t) (cMessage[port-1][shift+4]<<24) + (uint32_t) (cMessage[port-1][shift+5]<<16) + (uint32_t) (cMessage[port-1][shift+6]<<8) +(uint32_t)  cMessage[port-1][shift+7];
 		break;
@@ -449,6 +449,18 @@ uint8_t LookupWave(char *name)
 
 /*-----------------------------------------------------------*/
 
+/* 
+	Play a WAVE file streamed from one of module ports 
+*/
+bool PlayWaveFromPort(uint8_t _port)
+{
+
+	
+		return true;
+}
+
+/*-----------------------------------------------------------*/
+
 /* -----------------------------------------------------------------------
 	|																APIs	 																 	|
    ----------------------------------------------------------------------- 
@@ -523,6 +535,105 @@ bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs)
 }
 
 /*-----------------------------------------------------------*/
+
+/**
+	play Wave file from H1BR6 module
+				send message to module H1BR6 to start streaming wave file to UART
+				and receive wave sound data
+* @param H1BR6x_ID : H1BR6x ID
+					Reset H1BR6x_ID to zero for automatic search of H1BR6x in the array topology
+*/
+bool PlayWaveFromModule(uint8_t H1BR6x_ID)
+{	
+		uint8_t port = 0;
+		
+		//search for H1BR6x ID in the array topology and return the first one found
+		if (H1BR6x_ID == 0)
+		{
+			for (uint8_t _ID=0 ; _ID<_N ; _ID++)
+			{
+				if (array[_ID][0] == _H1BR6)
+					{H1BR6x_ID =  _ID+1;}				
+			}
+		}
+		if (H1BR6x_ID == 0)
+				{	return false;	}
+	
+		port = FindRoute(myID, H1BR6x_ID);
+		if (port == NULL)	{return false;}
+		
+		if(WAVE_SIZE < 0xFFFFFFFE)
+		{
+			messageParams[0] = myID;
+			messageParams[1] = port;
+			SendMessageToModule(H1BR6x_ID, CODE_H1BR6_READ_WAVE, 2);
+			
+			return PlayWaveFromPort(port);
+		}
+		return false;
+}
+
+/*-----------------------------------------------------------*/
+/**
+	Scan Wave file in H1BR6 module
+				send message to module H1BR6 to search for .wave files using file name and wait for response from H1BR6 module
+* @param Wave_Full_Name : Wave file name with or without file extension '.wav'
+* @param H1BR6x_ID : H1BR6x ID
+					Reset H1BR6x_ID to zero for automatic search of H1BR6x in the array topology
+*/
+SCAN_STATE ScanWaveFile(char* Wave_Full_Name , uint8_t H1BR6x_ID)
+{
+	WAVE_SIZE = 0xFFFFFFFE;
+	SAMPLERATE = 0xFFFFFFFF;
+	uint32_t tickstart = 0;
+	uint8_t size_of_wav = strlen(Wave_Full_Name);
+	
+	//search for H1BR6x ID in the array topology
+	if (H1BR6x_ID == 0)
+	{
+		for (uint8_t _ID=0 ; _ID<_N ; _ID++)
+		{
+			if (array[_ID][0] == _H1BR6)
+				{H1BR6x_ID =  _ID+1;}				
+		}
+	}
+	
+	if (H1BR6x_ID == 0)
+	{
+		return H1BR6x_ID_NOT_FOUND;
+	}
+	
+	for (uint16_t index=0 ; index <  size_of_wav ; index++)
+			{	messageParams[index+1] = (uint8_t) 	Wave_Full_Name[index];}
+	
+	
+	//1st param send H07R3 ID
+	messageParams[0]=myID;
+	//2nd param send wave file name
+	// Send filename without extension
+	if(Wave_Full_Name[size_of_wav-4]=='.' && Wave_Full_Name[size_of_wav-3]=='w' && Wave_Full_Name[size_of_wav-2]=='a' && Wave_Full_Name[size_of_wav-1]=='v')
+			{ SendMessageToModule(H1BR6x_ID, CODE_H1BR6_SCAN_WAVE, size_of_wav-3);}
+	else {	SendMessageToModule(H1BR6x_ID, CODE_H1BR6_SCAN_WAVE, size_of_wav+1);	}
+	
+	//wait for response
+	tickstart = HAL_GetTick();
+	//wait for 1000 ms until you get a response
+	while((HAL_GetTick() - tickstart) < 1000)
+	{
+		if(WAVE_SIZE != 0xFFFFFFFE && WAVE_SIZE != 0xFFFFFFFF)
+			{	
+					IND_blink(100);
+					return WAVE_FILE_OK; 
+			}
+	}
+
+	if(WAVE_SIZE == 0xFFFFFFFF)
+			{ return WAVE_FILE_NOT_FOUND;}		//wave file does not exist in H1BR6 module
+	return H1BR6x_NO_RESPONSE;	
+}	
+
+/*-----------------------------------------------------------*/
+
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|

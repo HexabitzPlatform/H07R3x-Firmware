@@ -297,6 +297,14 @@ typedef struct AudioDesc_s {
 	float rate;
 } AudioDesc_t;
 
+// WAVE scan state enum
+typedef enum {
+		WAVE_FILE_OK =1,
+		H1BR6x_ID_NOT_FOUND,
+		WAVE_FILE_NOT_FOUND,
+		H1BR6x_NO_RESPONSE,
+}SCAN_STATE;
+
 extern AudioDesc_t currentAudioDesc;
 
 	

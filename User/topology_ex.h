@@ -31,7 +31,7 @@ static uint16_t array[_N][7] = {
 
 // Configurations for duplex serial ports
 #if ( _module == 1 )
-	#define	H01R0	1
+	#define	H1BR6	1
 	#define	_P1pol_normal	1
 	#define	_P2pol_normal	1
 	#define	_P3pol_normal	1
@@ -41,28 +41,10 @@ static uint16_t array[_N][7] = {
 #endif
 #if ( _module == 2 )
 	#define	H07R3	1
-	#define	_P1pol_normal	1
+	#define	_P1pol_reversed	1
 	#define	_P2pol_normal	1
 	#define	_P2pol_normal	1
 	#define	_P4pol_normal	1	
-	#define	_P5pol_normal	1
-	#define	_P6pol_normal	1
-#endif
-#if ( _module == 3 )
-	#define	H01R0	1
-	#define	_P1pol_normal	1
-	#define	_P2pol_normal	1
-	#define	_P3pol_normal	1
-	#define	_P4pol_reversed	1	
-	#define	_P5pol_reversed	1
-	#define	_P6pol_normal	1
-#endif
-#if ( _module == 4 )
-	#define	H01R0	1
-	#define	_P1pol_normal	1
-	#define	_P2pol_normal	1
-	#define	_P3pol_normal	1
-	#define	_P4pol_reversed	1	
 	#define	_P5pol_normal	1
 	#define	_P6pol_normal	1
 #endif
