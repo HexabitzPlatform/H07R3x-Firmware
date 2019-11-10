@@ -297,13 +297,14 @@ typedef struct AudioDesc_s {
 	float rate;
 } AudioDesc_t;
 
-// WAVE scan state enum
+// WAVE file scan/read state enum
 typedef enum {
 		WAVE_FILE_OK =1,
 		H1BR6x_ID_NOT_FOUND,
 		WAVE_FILE_NOT_FOUND,
 		H1BR6x_NO_RESPONSE,
-}SCAN_STATE;
+		WAVE_FILE_FAIL,
+}WAVE_FILE_STATE;
 
 extern AudioDesc_t currentAudioDesc;
 
@@ -316,6 +317,9 @@ bool PlayAudioNonBlock(AudioDesc_t *pDesc);
 void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate);
 bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds);
 bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs);
+WAVE_FILE_STATE PlayWaveFromModule(uint8_t H1BR6x_ID, uint32_t timeout);
+WAVE_FILE_STATE PlayWaveFromPort(uint8_t port, uint32_t length, uint8_t dataPointSize, uint32_t timeout);
+WAVE_FILE_STATE ScanWaveFile(char* Wave_Full_Name , uint8_t H1BR6x_ID, uint32_t timeout);
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|

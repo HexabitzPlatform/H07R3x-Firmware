@@ -373,7 +373,7 @@ void AudioPlayTask(void *argument)
 					}
 					/* Wait indefinitly until DMA transfer is finished */
 					ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-				if (currentAudioDesc.delay && (currentAudioDesc.numOfRepeats > 0)) {
+				if (currentAudioDesc.delay || (currentAudioDesc.numOfRepeats > 0)) {
 					state = STATE_WAIT;
 				} else { state = STATE_DEQUE;}		
 				break;
@@ -447,17 +447,6 @@ uint8_t LookupWave(char *name)
 	return	0;
 }
 
-/*-----------------------------------------------------------*/
-
-/* 
-	Play a WAVE file streamed from one of module ports 
-*/
-bool PlayWaveFromPort(uint8_t _port)
-{
-
-	
-		return true;
-}
 
 /*-----------------------------------------------------------*/
 
@@ -536,6 +525,84 @@ bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs)
 
 /*-----------------------------------------------------------*/
 
+/* 
+	Play a WAVE file streamed from one of module ports 
+*/
+WAVE_FILE_STATE PlayWaveFromPort(uint8_t port, uint32_t length, uint8_t dataPointSize, uint32_t timeout)
+{
+	DMA_HandleTypeDef hdma_dac_ch1;
+	DAC_ChannelConfTypeDef sConfig;
+	
+	HAL_TIM_Base_Stop(&htim2);
+	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	
+	/* Stop messasging DMA on this port */
+	StopMsgDMA(port);
+	portStatus[port] = CUSTOM;
+	
+	HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+	
+	/* Config DAC channel OUT1 to no trigger */
+  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+  HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1);
+	
+	/* Re-setup msg DMA to transfer bytes into DAC */
+	msgRxDMA[port-1].Init.Direction = DMA_PERIPH_TO_MEMORY;
+	msgRxDMA[port-1].Init.PeriphInc = DMA_PINC_DISABLE;
+	msgRxDMA[port-1].Init.MemInc = DMA_MINC_DISABLE;
+	msgRxDMA[port-1].Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	msgRxDMA[port-1].Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+	msgRxDMA[port-1].Init.Mode = DMA_NORMAL;
+	msgRxDMA[port-1].Init.Priority = DMA_PRIORITY_MEDIUM;
+	HAL_DMA_Init(&msgRxDMA[port-1]);
+
+	/* DAC alignment */
+	uint32_t alignment = DAC_ALIGN_8B_R, tempreg = 0;
+	switch(alignment)
+	{
+		case DAC_ALIGN_12B_R:
+			/* Get DHR12R1 address */
+			tempreg = (uint32_t)&hdac.Instance->DHR12R1;
+			break;
+		case DAC_ALIGN_12B_L:
+			/* Get DHR12L1 address */
+			tempreg = (uint32_t)&hdac.Instance->DHR12L1;
+			break;
+		case DAC_ALIGN_8B_R:
+			/* Get DHR8R1 address */
+			tempreg = (uint32_t)&hdac.Instance->DHR8R1;
+			break;
+		default:
+			break;
+	}
+	
+	/* Start DMA stream	*/	
+	GetUart(port)->State = HAL_UART_STATE_READY;  
+	HAL_UART_Receive_DMA(GetUart(port), (uint8_t *)tempreg, length);
+	
+	/* Wait indefinitly until DMA transfer is finished */
+	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+	
+	HAL_DAC_Stop(&hdac, DAC_CHANNEL_1);
+	
+	/* Config DAC channel OUT1 to Timer2 trigger */
+  sConfig.DAC_Trigger = DAC_TRIGGER_T2_TRGO;
+  HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1);
+	
+	/* Config message DMA into normal messaging mode again */
+
+	// Initialize a messaging DMA using same channels
+	DMA_MSG_RX_CH_Init(&msgRxDMA[port-1], msgRxDMA[port-1].Instance);	
+	// Remove stream DMA and change port status
+	portStatus[port] = FREE; 
+	// Read this port again in messaging mode	
+	DMA_MSG_RX_Setup(GetUart(port), &msgRxDMA[port-1]);
+	
+	return WAVE_FILE_OK;
+}
+
+/*-----------------------------------------------------------*/
+
 /**
 	play Wave file from H1BR6 module
 				send message to module H1BR6 to start streaming wave file to UART
@@ -543,7 +610,7 @@ bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs)
 * @param H1BR6x_ID : H1BR6x ID
 					Reset H1BR6x_ID to zero for automatic search of H1BR6x in the array topology
 */
-bool PlayWaveFromModule(uint8_t H1BR6x_ID)
+WAVE_FILE_STATE PlayWaveFromModule(uint8_t H1BR6x_ID, uint32_t timeout)
 {	
 		uint8_t port = 0;
 		
@@ -557,10 +624,10 @@ bool PlayWaveFromModule(uint8_t H1BR6x_ID)
 			}
 		}
 		if (H1BR6x_ID == 0)
-				{	return false;	}
+				{	return H1BR6x_ID_NOT_FOUND;	}
 	
 		port = FindRoute(myID, H1BR6x_ID);
-		if (port == NULL)	{return false;}
+		if (port == NULL)	{return H1BR6x_ID_NOT_FOUND;}
 		
 		if(WAVE_SIZE < 0xFFFFFFFE)
 		{
@@ -568,9 +635,19 @@ bool PlayWaveFromModule(uint8_t H1BR6x_ID)
 			messageParams[1] = port;
 			SendMessageToModule(H1BR6x_ID, CODE_H1BR6_READ_WAVE, 2);
 			
-			return PlayWaveFromPort(port);
+			// Add wave to playlist - Note we're reading only multiples of MSG_RX_BUF_SIZE bytes
+			
+//			currentAudioDesc.pBuffer = (uint32_t *)&UARTRxBuf[port-1];//(uint32_t *)(&(GetUart(port)->Instance->RDR)); 
+//			currentAudioDesc.lenOfBuf = MSG_RX_BUF_SIZE;//WAVE_SIZE;;
+//			currentAudioDesc.numOfBitsInACode = 8;
+//			currentAudioDesc.numOfRepeats = WAVE_SIZE/MSG_RX_BUF_SIZE;//1;;
+//			currentAudioDesc.rate = SAMPLERATE;
+			
+			//return AddAudioToPlaylist((uint32_t *)&UARTRxBuf[port-1], MSG_RX_BUF_SIZE, WAVE_SIZE/MSG_RX_BUF_SIZE, 8, SAMPLERATE, 0);
+			//return AddAudioToPlaylist((uint32_t *)(&(GetUart(port)->Instance->RDR)), WAVE_SIZE, 1, 8, SAMPLERATE, 0);
+			return PlayWaveFromPort(port, WAVE_SIZE, 8, timeout+100);
 		}
-		return false;
+		return WAVE_FILE_FAIL;
 }
 
 /*-----------------------------------------------------------*/
@@ -581,7 +658,7 @@ bool PlayWaveFromModule(uint8_t H1BR6x_ID)
 * @param H1BR6x_ID : H1BR6x ID
 					Reset H1BR6x_ID to zero for automatic search of H1BR6x in the array topology
 */
-SCAN_STATE ScanWaveFile(char* Wave_Full_Name , uint8_t H1BR6x_ID)
+WAVE_FILE_STATE ScanWaveFile(char* Wave_Full_Name , uint8_t H1BR6x_ID, uint32_t timeout)
 {
 	WAVE_SIZE = 0xFFFFFFFE;
 	SAMPLERATE = 0xFFFFFFFF;
@@ -617,8 +694,8 @@ SCAN_STATE ScanWaveFile(char* Wave_Full_Name , uint8_t H1BR6x_ID)
 	
 	//wait for response
 	tickstart = HAL_GetTick();
-	//wait for 1000 ms until you get a response
-	while((HAL_GetTick() - tickstart) < 1000)
+	//wait for timeout + 500 ms until you get a response
+	while((HAL_GetTick() - tickstart) < (timeout+500))
 	{
 		if(WAVE_SIZE != 0xFFFFFFFE && WAVE_SIZE != 0xFFFFFFFF)
 			{	
