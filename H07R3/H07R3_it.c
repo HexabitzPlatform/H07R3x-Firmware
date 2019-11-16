@@ -44,6 +44,8 @@
 extern uint8_t UARTRxBuf[NumOfPorts][MSG_RX_BUF_SIZE];
 //extern uint8_t UARTTxBuf[3][MSG_TX_BUF_SIZE];
 extern uint8_t UARTRxBufIndex[NumOfPorts];
+extern TaskHandle_t UserTaskHandle;
+
 
 /* External function prototypes ----------------------------------------------*/
 
@@ -210,19 +212,17 @@ void DMA1_Ch4_7_DMA2_Ch3_5_IRQHandler(void)
 void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 {
     portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-
-    currentAudioDesc.numOfRepeats--;
-    
-    if (currentAudioDesc.delay || (currentAudioDesc.numOfRepeats <= 0)) {
-
-        HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
-        HAL_TIM_Base_Stop(&htim2);
-        
-        vTaskNotifyGiveFromISR(AudioPlayTaskHandle, &(xHigherPriorityTaskWoken));
-        
-        if (xHigherPriorityTaskWoken)
-            taskYIELD();
-		}
+   
+    if (currentAudioDesc.numOfRepeats > 0) {
+			currentAudioDesc.numOfRepeats--;
+		} 
+		
+		HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
+		HAL_TIM_Base_Stop(&htim2);
+		
+		vTaskNotifyGiveFromISR(AudioPlayTaskHandle, &(xHigherPriorityTaskWoken));
+//		if (xHigherPriorityTaskWoken)
+//			taskYIELD();
 }
 
 /*-----------------------------------------------------------*/
@@ -263,6 +263,8 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+	
 	// Check only ports in messaging mode
 	if (portStatus[GetPort(huart)] == FREE || portStatus[GetPort(huart)] == MSG)
 	{
@@ -273,6 +275,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		UARTRxBufIndex[GetPort(huart)-1] = 0;
 		// Set a port-specific flag here and let the backend task restart DMA
 		MsgDMAStopped[GetPort(huart)-1] = true;	
+	} 
+	else if (portStatus[GetPort(huart)] == CUSTOM)			// Finished receiving WAVE file from port
+	{
+		// Give control back to User task
+		vTaskNotifyGiveFromISR(UserTaskHandle, &(xHigherPriorityTaskWoken));
 	}
 }
 
