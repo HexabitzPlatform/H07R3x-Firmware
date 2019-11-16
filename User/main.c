@@ -116,11 +116,17 @@ void UserTask(void * argument)
 {
 
   /* Infinite loop */
-	SCAN_STATE response;
+	static WAVE_FILE_STATE response; 
 	
 	Delay_ms(1000);
-	response = ScanWaveFile("WAV1",1);
-	Delay_ms(1000);
+	response = ScanWaveFile("hithere", 1, 2000);
+	Delay_ms(500);
+	
+	if (response == WAVE_FILE_OK)
+		response = PlayWaveFromModule(1, 2000);
+//	Delay_ms(500);
+	//PlayWaveFromPort(P1, 14483, 8, 1000);
+	
 //	PlayWaveFromModule(1);
 
   for(;;)
