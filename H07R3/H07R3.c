@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
+    BitzOS (BOS) V0.2.0 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 
     File Name     : H07R3.c
@@ -192,9 +192,9 @@ const CLI_Command_Definition_t demoCommandDefinition =
 
 static const CLI_Command_Definition_t PlayFileCommandDefinition  = {
 		(const int8_t *)"playfile",
-		(const int8_t *)"PlayFile:\r\n Name of the File to Play\n\r",
+		(const int8_t *)"PlayFile:\r\n Enter the H1BR6 ID and the name of the File to Play\n\r",
 	PlayfileCommand,
-		1
+		2
 };  
 /*-----------------------------------------------------------*/
 
@@ -633,19 +633,6 @@ WAVE_FILE_STATE PlayWaveFromPort(uint8_t port, uint32_t length, uint8_t dataPoin
 WAVE_FILE_STATE PlayWaveFromModule(uint8_t H1BR6x_ID, uint32_t timeout)
 {	
 		uint8_t port = 0;
-		
-		//search for H1BR6x ID in the array topology and return the first one found
-		if (H1BR6x_ID == 0)
-		{
-			for (uint8_t _ID=0 ; _ID<_N ; _ID++)
-			{
-				if (array[_ID][0] == _H1BR6)
-					{H1BR6x_ID =  _ID+1;}				
-			}
-		}
-		if (H1BR6x_ID == 0)
-				{	return H1BR6x_ID_NOT_FOUND;	}
-	
 		port = FindRoute(myID, H1BR6x_ID);
 		if (port == NULL)	{return H1BR6x_ID_NOT_FOUND;}
 		
@@ -689,20 +676,6 @@ WAVE_FILE_STATE ScanWaveFile(char* Wave_Full_Name , uint8_t H1BR6x_ID, uint32_t 
 	uint32_t tickstart = 0;
 	uint8_t size_of_wav = strlen(Wave_Full_Name);
 	
-	//search for H1BR6x ID in the array topology
-	if (H1BR6x_ID == 0)
-	{
-		for (uint8_t _ID=0 ; _ID<_N ; _ID++)
-		{
-			if (array[_ID][0] == _H1BR6)
-				{H1BR6x_ID =  _ID+1;}				
-		}
-	}
-	
-	if (H1BR6x_ID == 0)
-	{
-		return H1BR6x_ID_NOT_FOUND;
-	}
 	
 	for (uint16_t index=0 ; index <  size_of_wav ; index++)
 			{	messageParams[index+1] = (uint8_t) 	Wave_Full_Name[index];}
@@ -1025,8 +998,9 @@ BaseType_t ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 /*.........................................................*/
 BaseType_t PlayfileCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
-	int8_t *pcParameterString1;
-	portBASE_TYPE xParameterStringLength1 = 0; 
+	int8_t *pcParameterString1,  *pcParameterString2;
+	portBASE_TYPE xParameterStringLength1 = 0;
+  portBASE_TYPE xParameterStringLength2 = 0;  
 	static const int8_t *pcOKfileMessage = ( int8_t * ) "the file was played successfully\r\n";
 	static const int8_t *pcWrongfilenameMessage = ( int8_t * ) "Wrong Name!\n\r";
 	
@@ -1043,20 +1017,25 @@ BaseType_t PlayfileCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const
 									1,						/* Return the first parameter. */
 									&xParameterStringLength1	/* Store the parameter string length. */
 								);
-
+	pcParameterString2 = ( int8_t * ) FreeRTOS_CLIGetParameter
+								(
+									pcCommandString,		/* The command string itself. */
+									2,						/* Return the first parameter. */
+									&xParameterStringLength2	/* Store the parameter string length. */
+								);
+  uint8_t   H1BR6_id = ( uint32_t ) atol(( char * ) pcParameterString1 );         
 	IND_blink(100);
-int8_t respone = ScanWaveFile((char *)pcParameterString1,0,1000);	
+  WAVE_FILE_STATE respone = ScanWaveFile((char *)pcParameterString2,H1BR6_id,1000);	
 	Delay_ms(100);
-	if(respone==1)
+	if(respone==WAVE_FILE_OK)
 	{
-	PlayWaveFromModule(0,100);
+    PlayWaveFromModule(H1BR6_id,100);
 		sprintf(( char * )pcWriteBuffer,( char * )pcOKfileMessage);
-			IND_blink(100);
+		IND_blink(100);
 	}
 	else
 	{	
-			sprintf(( char * )pcWriteBuffer,( char * )pcWrongfilenameMessage);
-		
+		sprintf(( char * )pcWriteBuffer,( char * )pcWrongfilenameMessage);
 		
 	}
 	

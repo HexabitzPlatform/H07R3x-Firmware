@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
+    BitzOS (BOS) V0.2.0 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 		
     File Name     : project.h
@@ -16,7 +16,7 @@
 #include "wave.h"
 
 /* Include a predefined topology here */
-#include "topology_ex.h"
+//#include "topology_1.h"
 
 
 #endif /* PROJECT_H */
