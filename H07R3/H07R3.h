@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
+    BitzOS (BOS) V0.2.0 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 		
     File Name     : H07R3.c
@@ -13,6 +13,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
+#include "H07R3_MemoryMap.h"
 #include "H07R3_uart.h"	
 #include "H07R3_gpio.h"	
 #include "H07R3_dma.h"		
@@ -280,6 +281,8 @@ extern void MX_USART2_UART_Init(void);
 extern void MX_USART3_UART_Init(void);
 extern void MX_USART4_UART_Init(void);
 extern void MX_USART5_UART_Init(void);
+extern uint32_t WAVE_SIZE ;
+extern uint32_t SAMPLERATE;
 
 #define AUDIO_DESC_QUE_SIZE								100
 
@@ -294,16 +297,16 @@ typedef struct AudioDesc_s {
 	float rate;
 } AudioDesc_t;
 
+// WAVE file scan/read state enum
+typedef enum {
+		WAVE_FILE_OK =1,
+		H1BR6x_ID_NOT_FOUND,
+		WAVE_FILE_NOT_FOUND,
+		H1BR6x_NO_RESPONSE,
+		WAVE_FILE_FAIL,
+}WAVE_FILE_STATE;
+
 extern AudioDesc_t currentAudioDesc;
-
-
-/* -----------------------------------------------------------------------
-	|														Message Codes	 														 	|
-   ----------------------------------------------------------------------- 
-*/
-
-#define CODE_H07R3_PLAY_SINE							800
-#define CODE_H07R3_PLAY_WAVE							801
 
 	
 /* -----------------------------------------------------------------------
@@ -314,6 +317,9 @@ bool PlayAudioNonBlock(AudioDesc_t *pDesc);
 void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_t dataPointSize, float rate);
 bool PlaySine(float freq, uint16_t NumOfSamples, float durationInSeconds);
 bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs);
+WAVE_FILE_STATE PlayWaveFromModule(uint8_t H1BR6x_ID, uint32_t timeout);
+WAVE_FILE_STATE PlayWaveFromPort(uint8_t port, uint32_t length, uint8_t dataPointSize, uint32_t timeout);
+WAVE_FILE_STATE ScanWaveFile(char* Wave_Full_Name , uint8_t H1BR6x_ID, uint32_t timeout);
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|

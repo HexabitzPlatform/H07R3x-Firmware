@@ -33,7 +33,7 @@
   */
 	
 /*
-		MODIFIED by Hexabitz for BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
+		MODIFIED by Hexabitz for BitzOS (BOS) V0.2.0 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 */
 
@@ -50,7 +50,7 @@
 
 	 
 extern DAC_HandleTypeDef hdac;
-extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim2;
 	 
 extern void MX_DAC_Init(void);
 	 

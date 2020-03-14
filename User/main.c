@@ -32,7 +32,7 @@
   */
 	
 /*
-		MODIFIED by Hexabitz for BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
+		MODIFIED by Hexabitz for BitzOS (BOS) V0.2.0 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 */
 
@@ -104,23 +104,19 @@ int main(void)
   while (1)
   {
 
-
   }
 
 
 }
 
-/*-----------------------------------------------------------*/
 
 /* User Task */
 void UserTask(void * argument)
 {
-
-	
   /* Infinite loop */
+
   for(;;)
   {
-
 	}
 }
 

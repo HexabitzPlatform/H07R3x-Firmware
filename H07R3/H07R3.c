@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
+    BitzOS (BOS) V0.2.0 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 
     File Name     : H07R3.c
@@ -14,7 +14,7 @@
 			>> DAC_OUT 1 for TS4990IST.
 			>> DMA1 Ch3 for DAC Ch 1 DMA.
 			>> PB0 for TS4990IST STDBY.
-			>> Timer 6 for DAC Ch 1 trigger.
+			>> Timer 2 to control audio rate (sample per second).
 			
 */
 	
@@ -49,9 +49,13 @@ TaskHandle_t AudioPlayTaskHandle = NULL;
 TaskHandle_t playTask = NULL;
 bool isInitilized = false;
 
+uint32_t WAVE_SIZE ;
+uint32_t SAMPLERATE;
+float duration;
 const char sineModeString[] = "sine";
 const char waveModeString[] = "wave";
 const char tuneModeString[] = "tune";
+const char fileModeString[] = "file";
 
 #if (MusicNotesNumOfSamples == 10)
 /* 10 samples 12-bit amplitude sine wave: 1.650, 2.620, 3.219, 3.220, 2.622, 1.653, 0.682, 0.081, 0.079, 0.676 */
@@ -147,12 +151,13 @@ uint8_t LookupWave(char *name);
 static portBASE_TYPE PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
 static portBASE_TYPE ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString);
 static portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE PlayfileCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 																	
 /* Create CLI commands --------------------------------------------------------*/
 										
 static const CLI_Command_Definition_t PlayCommandDefinition = {
 		(const int8_t *)"play",
-		(const int8_t *)"(H07R3) play:\r\n Syntax: play [tune]/[sine]/[wave] [note]/[freq]/[file]\r\n \
+		(const int8_t *)"play:\r\n Syntax: play [tune]/[sine]/[wave] [note]/[freq]/[file]\r\n \
 Play a musical tune or a sine wave or a wave file.\n\r Musical notes are:\n\r Cx, Dx, Ex, Fx, Gx, Ax, Bx OR:\n\r \
 DOx, REx, MIx, FAx, SOLx, LAx, SIx where x is octave number 1 to 9\n\r - Separate musical notes by a space.\n\r \
 - Add # after the note to raise it by a semitone (half-step).\n\r \
@@ -162,12 +167,14 @@ DO4 RE4 MI4[2] FA4 SOL4[0.5] LA4[3]\n\r\tC4 C4# D4 D4# [1] E4[2] F[0.25]\r\n\r\n
 		PlayCommand,
 		-1,
 };
+/*-----------------------------------------------------------*/
 
+		
 /*-----------------------------------------------------------*/
 
 static const CLI_Command_Definition_t ListCommandDefinition = {
 		(const int8_t *)"list",
-		(const int8_t *)"(H07R3) list:\r\n List embedded WAVE files\r\n\r\n",
+		(const int8_t *)"list:\r\n List embedded WAVE files\r\n\r\n",
 		ListCommand,
 		0,
 };
@@ -177,10 +184,18 @@ static const CLI_Command_Definition_t ListCommandDefinition = {
 const CLI_Command_Definition_t demoCommandDefinition =
 {
 	( const int8_t * ) "demo", /* The command string to type. */
-	( const int8_t * ) "(H07R3) demo:\r\n Run a demo program to test module functionality\r\n\r\n",
+	( const int8_t * ) "demo:\r\n Run a demo program to test module functionality\r\n\r\n",
 	demoCommand, /* The function to run. */
 	0 /* No parameters are expected. */
 };
+/*-----------------------------------------------------------*/
+
+static const CLI_Command_Definition_t PlayFileCommandDefinition  = {
+		(const int8_t *)"playfile",
+		(const int8_t *)"PlayFile:\r\n Enter the H1BR6 ID and the name of the File to Play\n\r",
+	PlayfileCommand,
+		2
+};  
 /*-----------------------------------------------------------*/
 
 /* -----------------------------------------------------------------------
@@ -210,24 +225,35 @@ void Module_Init(void)
 
 /* --- H07R3 message processing task. 
 */
-Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst)
+Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst, uint8_t shift)
 {
 	Module_Status result = H07R3_OK;
-	
+	uint16_t temp16;
+
 	switch (code) {
 		case CODE_H07R3_PLAY_SINE:
 		{
 			float freq = 0.0;
-			float durationInSeconds = 0.0;
-			memcpy(&freq, &messageParams[0], sizeof(freq));
-			memcpy(&freq, &messageParams[sizeof(freq)], sizeof(durationInSeconds));
-			PlaySine(freq, MusicNotesNumOfSamples, durationInSeconds);
+			freq = (float)(( (uint32_t) cMessage[port-1][shift] << 24 ) + ( (uint32_t) cMessage[port-1][shift+1] << 16 ) + ( (uint32_t) cMessage[port-1][shift+2] << 8 ) + cMessage[port-1][shift+3]);
+				PlaySine(freq, cMessage[port-1][shift+4], (float) cMessage[port-1][shift+5] / 16.0f); // time division 16
 			break;
 		}
 		case CODE_H07R3_PLAY_WAVE:
 		{
+			temp16 = (((uint16_t)cMessage[port-1][shift+1])<<8) + (uint16_t)cMessage[port-1][shift+2];
+			cMessage[port-1][messageLength[port-1]] = 0; 	// Terminate the wave name string
+			PlayWave((char *)&cMessage[port-1][shift+3], cMessage[port-1][shift], temp16);//1st parameter repeat time ,2nd & 3rd parameter for Delay time , and for WAV name for the latest parameters
 			break;
 		}
+		case CODE_H07R3_PLAY_TUNE://notesFreq[note][octave]
+		{
+			PlaySine(notesFreq[cMessage[port-1][shift]][cMessage[port-1][shift+1]], MusicNotesNumOfSamples, (float) cMessage[port-1][shift+2] / 16.0f);// time division 16
+		 	break;
+		}
+		case CODE_H07R3_SCAN_WAVE_RESPONSE:
+				WAVE_SIZE = (uint32_t)(cMessage[port-1][shift]<<24) + (uint32_t) (cMessage[port-1][shift+1]<<16) + (uint32_t) (cMessage[port-1][shift+2]<<8) + (uint32_t) cMessage[port-1][shift+3];
+				SAMPLERATE = (uint32_t) (cMessage[port-1][shift+4]<<24) + (uint32_t) (cMessage[port-1][shift+5]<<16) + (uint32_t) (cMessage[port-1][shift+6]<<8) +(uint32_t)  cMessage[port-1][shift+7];
+		break;
 		default:
 			result = H07R3_ERR_UnknownMessage;
 			break;
@@ -246,6 +272,7 @@ void RegisterModuleCLICommands(void)
 	FreeRTOS_CLIRegisterCommand(&PlayCommandDefinition);
 	FreeRTOS_CLIRegisterCommand(&ListCommandDefinition);
 	FreeRTOS_CLIRegisterCommand(&demoCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&PlayFileCommandDefinition);
 }
 
 /*-----------------------------------------------------------*/
@@ -296,7 +323,7 @@ bool TS4990_Init(void)
 		return false;
 	
 	if (xTaskCreate(AudioPlayTask, (const char *)"AudioPlayTask", (2 * configMINIMAL_STACK_SIZE), 
-									NULL, osPriorityNormal, &AudioPlayTaskHandle) != pdPASS)
+									NULL, osPriorityNormal-osPriorityIdle, &AudioPlayTaskHandle) != pdPASS)
 		return false;
 	
 	TS4990_ENABLE();
@@ -353,23 +380,20 @@ void AudioPlayTask(void *argument)
 			}
 			case STATE_PLAY_AUDIO:
 			{
-				if (currentAudioDesc.delay && (currentAudioDesc.numOfRepeats > 0)) {
-					state = STATE_WAIT;
-				} else {
-					state = STATE_DEQUE;			
 					if (PlayAudioNonBlock(&currentAudioDesc) == false) {
 						// TODO: Add a delay
 						break;
 					}
 					/* Wait indefinitly until DMA transfer is finished */
 					ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-				}		
+				if (currentAudioDesc.delay || (currentAudioDesc.numOfRepeats > 0)) {
+					state = STATE_WAIT;
+				} else { state = STATE_DEQUE;}		
 				break;
 			}
 			case STATE_WAIT:
 			{
-				Delay_ms(currentAudioDesc.delay);	
-				currentAudioDesc.numOfRepeats--;			
+				Delay_ms(currentAudioDesc.delay);				
 				if (currentAudioDesc.numOfRepeats > 0)
 					state = STATE_PLAY_AUDIO;
 				else
@@ -436,6 +460,7 @@ uint8_t LookupWave(char *name)
 	return	0;
 }
 
+
 /*-----------------------------------------------------------*/
 
 /* -----------------------------------------------------------------------
@@ -445,13 +470,13 @@ uint8_t LookupWave(char *name)
 
 bool PlayAudioNonBlock(AudioDesc_t *pDesc)
 {
-	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
-	HAL_TIM_Base_Stop(&htim6);
+	/* Setup Tim 2: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
+	HAL_TIM_Base_Stop(&htim2);
 	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
 	
-	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t)(((SystemCoreClock / pDesc->rate) / 2) - 1);
-	HAL_TIM_Base_Start(&htim6);
+	htim2.Instance->ARR = (uint32_t)(((SystemCoreClock / pDesc->rate) / 2) - 1);
+	htim2.Instance->PSC = 1;
+	HAL_TIM_Base_Start(&htim2);
 	
 	uint32_t alignment = DAC_ALIGN_8B_R;
 	if (pDesc->numOfBitsInACode > 8)
@@ -471,13 +496,13 @@ void PlayAudio(uint32_t *pBuffer, uint32_t length, uint32_t numOfRepeats, uint8_
 	// NumberOfTuneWaves = numOfRepeats;
 	playTask = xTaskGetCurrentTaskHandle();
 	
-	/* Setup Tim 6: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
-	HAL_TIM_Base_Stop(&htim6);
+	/* Setup Tim 2: Prescaler = (SystemCoreClock / TIM6 trigger clock) - 1, ARR = TIM6 trigger clock - 1 */
+	HAL_TIM_Base_Stop(&htim2);
 	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
 	
-	htim6.Instance->ARR = 1;
-	htim6.Instance->PSC = (uint16_t)(((SystemCoreClock / rate) / 2) - 1);
-	HAL_TIM_Base_Start(&htim6);
+	htim2.Instance->ARR = (uint32_t)(((SystemCoreClock / rate) / 2) - 1);
+	htim2.Instance->PSC = 1;
+	HAL_TIM_Base_Start(&htim2);
 	
 	uint32_t alignment = DAC_ALIGN_8B_R;
 	if (dataPointSize > 8)
@@ -513,6 +538,177 @@ bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs)
 
 /*-----------------------------------------------------------*/
 
+/* 
+	Play a WAVE file streamed from one of module ports 
+*/
+WAVE_FILE_STATE PlayWaveFromPort(uint8_t port, uint32_t length, uint8_t dataPointSize, uint32_t timeout)
+{
+	DMA_HandleTypeDef hdma_dac_ch1;
+	DAC_ChannelConfTypeDef sConfig;
+	
+	HAL_TIM_Base_Stop(&htim2);
+	HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+	
+	/* Stop messasging DMA on this port */
+	StopMsgDMA(port);
+	portStatus[port] = CUSTOM;
+	
+	HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+	
+	/* Config DAC channel OUT1 to no trigger */
+  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+	sConfig.DAC_OutputBuffer=DAC_OUTPUTBUFFER_ENABLE;
+	
+  HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1);
+	
+	/* Re-setup msg DMA to transfer bytes into DAC */
+	msgRxDMA[port-1].Init.Direction = DMA_PERIPH_TO_MEMORY;
+	msgRxDMA[port-1].Init.PeriphInc = DMA_PINC_DISABLE;
+	msgRxDMA[port-1].Init.MemInc = DMA_MINC_DISABLE;
+	msgRxDMA[port-1].Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	msgRxDMA[port-1].Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+	msgRxDMA[port-1].Init.Mode = DMA_CIRCULAR;
+	msgRxDMA[port-1].Init.Priority = DMA_PRIORITY_MEDIUM;
+	HAL_DMA_Init(&msgRxDMA[port-1]);
+
+	/* DAC alignment */
+	uint32_t alignment = DAC_ALIGN_8B_R, tempreg = 0;
+	switch(alignment)
+	{
+		case DAC_ALIGN_12B_R:
+			/* Get DHR12R1 address */
+			tempreg = (uint32_t)&hdac.Instance->DHR12R1;
+			break;
+		case DAC_ALIGN_12B_L:
+			/* Get DHR12L1 address */
+			tempreg = (uint32_t)&hdac.Instance->DHR12L1;
+			break;
+		case DAC_ALIGN_8B_R:
+			/* Get DHR8R1 address */
+			tempreg = (uint32_t)&hdac.Instance->DHR8R1;
+			break;
+		default:
+			break;
+	}
+
+	/* Start DMA stream	*/	
+	GetUart(port)->State = HAL_UART_STATE_READY;  
+	HAL_UART_Receive_DMA(GetUart(port), (uint8_t *)tempreg, length);
+
+	/* Wait indefinitly until DMA transfer is finished */
+	duration =(WAVE_SIZE/SAMPLERATE)*1000;
+	ulTaskNotifyTake(pdTRUE, duration+1000);
+	HAL_DAC_Stop(&hdac, DAC_CHANNEL_1);
+	
+	/* Config DAC channel OUT1 to Timer2 trigger */
+  sConfig.DAC_Trigger = DAC_TRIGGER_T2_TRGO;
+  HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1);
+	
+	/* Config message DMA into normal messaging mode again */
+	HAL_UART_DMAStop(GetUart(port));
+
+	// Initialize a messaging DMA using same channels
+	HAL_UART_DeInit(GetUart(port));
+	Delay_ms(100);
+	HAL_UART_Init(GetUart(port));
+	DMA_MSG_RX_CH_Init(&msgRxDMA[port-1], msgRxDMA[port-1].Instance);	
+	// Remove stream DMA and change port status
+	portStatus[port] = FREE; 
+	// Read this port again in messaging mode	
+  DMA_MSG_RX_Setup(GetUart(port), &msgRxDMA[port-1]);
+
+
+	return WAVE_FILE_OK;
+}
+
+/*-----------------------------------------------------------*/
+
+/**
+	play Wave file from H1BR6 module
+				send message to module H1BR6 to start streaming wave file to UART
+				and receive wave sound data
+* @param H1BR6x_ID : H1BR6x ID
+					Reset H1BR6x_ID to zero for automatic search of H1BR6x in the array topology
+*/
+WAVE_FILE_STATE PlayWaveFromModule(uint8_t H1BR6x_ID, uint32_t timeout)
+{	
+		uint8_t port = 0;
+		port = FindRoute(myID, H1BR6x_ID);
+		if (port == NULL)	{return H1BR6x_ID_NOT_FOUND;}
+		
+		if(WAVE_SIZE < 0xFFFFFFFE)
+		{
+			messageParams[0] = myID;
+			messageParams[1] = port;
+			SendMessageToModule(H1BR6x_ID, CODE_H1BR6_READ_WAVE, 2);
+                                  
+
+			
+			// Add wave to playlist - Note we're reading only multiples of MSG_RX_BUF_SIZE bytes
+			
+//			currentAudioDesc.pBuffer = (uint32_t *)&UARTRxBuf[port-1];//(uint32_t *)(&(GetUart(port)->Instance->RDR)); 
+//			currentAudioDesc.lenOfBuf = MSG_RX_BUF_SIZE;//WAVE_SIZE;;
+//			currentAudioDesc.numOfBitsInACode = 8;
+//			currentAudioDesc.numOfRepeats = WAVE_SIZE/MSG_RX_BUF_SIZE;//1;;
+//			currentAudioDesc.rate = SAMPLERATE;
+			
+			//return AddAudioToPlaylist((uint32_t *)&UARTRxBuf[port-1], MSG_RX_BUF_SIZE, WAVE_SIZE/MSG_RX_BUF_SIZE, 8, SAMPLERATE, 0);
+			//return AddAudioToPlaylist((uint32_t *)(&(GetUart(port)->Instance->RDR)), WAVE_SIZE, 1, 8, SAMPLERATE, 0);
+			return PlayWaveFromPort(port, WAVE_SIZE, 8, timeout+10);
+     
+		}
+   
+		return WAVE_FILE_FAIL;
+}
+
+/*-----------------------------------------------------------*/
+/**
+	Scan Wave file in H1BR6 module
+				send message to module H1BR6 to search for .wave files using file name and wait for response from H1BR6 module
+* @param Wave_Full_Name : Wave file name with or without file extension '.wav'
+* @param H1BR6x_ID : H1BR6x ID
+					Reset H1BR6x_ID to zero for automatic search of H1BR6x in the array topology
+*/
+WAVE_FILE_STATE ScanWaveFile(char* Wave_Full_Name , uint8_t H1BR6x_ID, uint32_t timeout)
+{
+	WAVE_SIZE = 0xFFFFFFFE;
+	SAMPLERATE = 0xFFFFFFFF;
+	uint32_t tickstart = 0;
+	uint8_t size_of_wav = strlen(Wave_Full_Name);
+	
+	
+	for (uint16_t index=0 ; index <  size_of_wav ; index++)
+			{	messageParams[index+1] = (uint8_t) 	Wave_Full_Name[index];}
+	
+	
+	//1st param send H07R3 ID
+	messageParams[0]=myID;
+	//2nd param send wave file name
+	// Send filename without extension
+	if(Wave_Full_Name[size_of_wav-4]=='.' && Wave_Full_Name[size_of_wav-3]=='w' && Wave_Full_Name[size_of_wav-2]=='a' && Wave_Full_Name[size_of_wav-1]=='v')
+			{ SendMessageToModule(H1BR6x_ID, CODE_H1BR6_SCAN_WAVE, size_of_wav-3);}
+	else {	SendMessageToModule(H1BR6x_ID, CODE_H1BR6_SCAN_WAVE, size_of_wav+1);	}
+	
+	//wait for response
+	tickstart = HAL_GetTick();
+	//wait for timeout + 500 ms until you get a response
+	while((HAL_GetTick() - tickstart) < (timeout+1000))
+	{
+		if(WAVE_SIZE != 0xFFFFFFFE && WAVE_SIZE != 0xFFFFFFFF)
+			{	
+					IND_blink(100);
+					return WAVE_FILE_OK; 
+			}
+	}
+
+	if(WAVE_SIZE == 0xFFFFFFFF)
+			{ return WAVE_FILE_NOT_FOUND;}		//wave file does not exist in H1BR6 module
+	return H1BR6x_NO_RESPONSE;	
+}	
+
+/*-----------------------------------------------------------*/
+
+
 /* -----------------------------------------------------------------------
 	|															Commands																 	|
    ----------------------------------------------------------------------- 
@@ -544,7 +740,7 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 	} 
 	
 	// Wave mode
-	if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen)))
+	if (!strncmp(modeParams, waveModeString, fmax(strlen(waveModeString), modeStringParamLen)))
 	{
 		// Parse WAVE name
 		nameParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &lengthStringParamLen);
@@ -556,7 +752,7 @@ static bool PlayCommandLineParser(const int8_t *pcCommandString, char **ppModeSt
 		return true;
 	}
 	// Sine mode
-	else if (*tuneMode == false && strncmp(modeParams, tuneModeString, max(strlen(tuneModeString), modeStringParamLen)) != 0)
+	else if (*tuneMode == false && strncmp(modeParams, tuneModeString, fmax(strlen(tuneModeString), modeStringParamLen)) != 0)
 	{	
 		freqParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 2, &freqStringParamLen);
 		lengthParams = (char *)FreeRTOS_CLIGetParameter(pcCommandString, 3, &lengthStringParamLen);
@@ -753,13 +949,13 @@ BaseType_t PlayCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 		if (PlayCommandLineParser(pcCommandString, &modeParams, &modeStringParamLen, &freq, &length, &tuneMode) == false)
 			break;
 		
-		if (tuneMode || !strncmp(modeParams, tuneModeString, max(strlen(tuneModeString), modeStringParamLen))) {		// Loop over this mode until all notes are proccessed
+		if (tuneMode || !strncmp(modeParams, tuneModeString, fmax(strlen(tuneModeString), modeStringParamLen))) {		// Loop over this mode until all notes are proccessed
 			PlaySine(freq, MusicNotesNumOfSamples, length);		
-		} else if (!strncmp(modeParams, sineModeString, max(strlen(sineModeString), modeStringParamLen))) {		// Execute this mode once
+		} else if (!strncmp(modeParams, sineModeString, fmax(strlen(sineModeString), modeStringParamLen))) {		// Execute this mode once
 			PlaySine(freq, MusicNotesNumOfSamples, length);
 			return pdFALSE;
-		} else if (!strncmp(modeParams, waveModeString, max(strlen(waveModeString), modeStringParamLen))) {		// Execute this mode once
-			AddAudioToPlaylist(waveAdd[(uint8_t)freq], waveLength[(uint8_t)freq], 0, waveResolution[(uint8_t)freq], 16000, 0);
+		} else if (!strncmp(modeParams, waveModeString, fmax(strlen(waveModeString), modeStringParamLen))) {		// Execute this mode once
+			AddAudioToPlaylist(waveAdd[(uint8_t)freq], waveLength[(uint8_t)freq], 0, waveResolution[(uint8_t)freq], waveRate[(uint8_t)freq], 0);		// freq is used to pass in wave index
 			return pdFALSE;
 		} else {
 			strncat((char *)pcWriteBuffer, "Error: Invalid Params\r\n", xWriteBufferLen);
@@ -799,6 +995,55 @@ BaseType_t ListCommand(int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8
 	return pdFALSE;	
 }
 
+/*.........................................................*/
+BaseType_t PlayfileCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	int8_t *pcParameterString1,  *pcParameterString2;
+	portBASE_TYPE xParameterStringLength1 = 0;
+  portBASE_TYPE xParameterStringLength2 = 0;  
+	static const int8_t *pcOKfileMessage = ( int8_t * ) "the file was played successfully\r\n";
+	static const int8_t *pcWrongfilenameMessage = ( int8_t * ) "Wrong Name!\n\r";
+	
+	/* Remove compile time warnings about unused parameters, and check the
+	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+	write buffer length is adequate, so does not check for buffer overflows. */
+	( void ) xWriteBufferLen;
+	configASSERT( pcWriteBuffer );
+	
+	/* Obtain the 1st parameter string. */
+	pcParameterString1 = ( int8_t * ) FreeRTOS_CLIGetParameter
+								(
+									pcCommandString,		/* The command string itself. */
+									1,						/* Return the first parameter. */
+									&xParameterStringLength1	/* Store the parameter string length. */
+								);
+	pcParameterString2 = ( int8_t * ) FreeRTOS_CLIGetParameter
+								(
+									pcCommandString,		/* The command string itself. */
+									2,						/* Return the first parameter. */
+									&xParameterStringLength2	/* Store the parameter string length. */
+								);
+  uint8_t   H1BR6_id = ( uint32_t ) atol(( char * ) pcParameterString1 );         
+	IND_blink(100);
+  WAVE_FILE_STATE respone = ScanWaveFile((char *)pcParameterString2,H1BR6_id,1000);	
+	Delay_ms(100);
+	if(respone==WAVE_FILE_OK)
+	{
+    PlayWaveFromModule(H1BR6_id,100);
+		sprintf(( char * )pcWriteBuffer,( char * )pcOKfileMessage);
+		IND_blink(100);
+	}
+	else
+	{	
+		sprintf(( char * )pcWriteBuffer,( char * )pcWrongfilenameMessage);
+		
+	}
+	
+	
+	/* There is no more data to return after this single string, so return
+	pdFALSE. */
+	return pdFALSE;
+}
 /*-----------------------------------------------------------*/
 
 portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
@@ -816,7 +1061,6 @@ portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const 
 	pdFALSE. */
 	return pdFALSE;
 }
-
 /*-----------------------------------------------------------*/
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/
