@@ -640,7 +640,7 @@
             <File>
               <FileName>startup_stm32f091xc.s</FileName>
               <FileType>2</FileType>
-              <FilePath>..\H07R3\startup_stm32f091xc.s</FilePath>
+              <FilePath>..\H07R3\arm\startup_stm32f091xc.s</FilePath>
             </File>
           </Files>
         </Group>
@@ -1280,7 +1280,7 @@
             <File>
               <FileName>startup_stm32f091xc.s</FileName>
               <FileType>2</FileType>
-              <FilePath>..\H07R3\startup_stm32f091xc.s</FilePath>
+              <FilePath>..\H07R3\arm\startup_stm32f091xc.s</FilePath>
             </File>
           </Files>
         </Group>
