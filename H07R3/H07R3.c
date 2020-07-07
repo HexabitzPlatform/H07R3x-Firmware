@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.2.0 - Copyright (C) 2017-2020 Hexabitz
+    BitzOS (BOS) V0.2.2 - Copyright (C) 2017-2020 Hexabitz
     All rights reserved
 
     File Name     : H07R3.c
@@ -634,7 +634,7 @@ WAVE_FILE_STATE PlayWaveFromModule(uint8_t H1BR6x_ID, uint32_t timeout)
 {	
 		uint8_t port = 0;
 		port = FindRoute(myID, H1BR6x_ID);
-		if (port == NULL)	{return H1BR6x_ID_NOT_FOUND;}
+		if (port == 0)	{return H1BR6x_ID_NOT_FOUND;}
 		
 		if(WAVE_SIZE < 0xFFFFFFFE)
 		{
