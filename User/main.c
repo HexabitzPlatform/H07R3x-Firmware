@@ -115,7 +115,7 @@ void UserTask(void * argument)
 {
   /* Infinite loop */
 
-  for(;;)
+	for(;;)
   {
 	}
 }

@@ -16,7 +16,7 @@
 #include "wave.h"
 
 /* Include a predefined topology here */
-//#include "topology_1.h"
+#include "topology_1.h"
 
 
 #endif /* PROJECT_H */

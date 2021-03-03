@@ -216,9 +216,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/H07R3/H07R3_uart.h</locationURI>
 		</link>
 		<link>
-			<name>H07R3/gcc</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
+			<name>H07R3/startup_stm32f091xc.s</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/H07R3/startup_stm32f091xc.s</locationURI>
 		</link>
 		<link>
 			<name>H07R3/stm32f0xx_hal_conf.h</name>
@@ -279,11 +279,6 @@
 			<name>User/wave_how_r_u.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/User/wave_how_r_u.c</locationURI>
-		</link>
-		<link>
-			<name>H07R3/gcc/startup_stm32f091xc.s</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H07R3/gcc/startup_stm32f091xc.s</locationURI>
 		</link>
 		<link>
 			<name>Thirdparty/CMSIS/Device</name>
