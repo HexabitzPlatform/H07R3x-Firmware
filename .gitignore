@@ -1,14 +1,7 @@
-MDK-ARM/Objects/
-MDK-ARM/Listings/
 *.o
 *.d
-*.list
-*.map
-*.elf
 *.Admin
 *.dbgconf
-*.asaad
-*.uvoptx
 *.mk
 *.su
 *.xml
