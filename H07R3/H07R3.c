@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
+    BitzOS (BOS) V0.2.5 - Copyright (C) 2017-2021 Hexabitz
     All rights reserved
 
     File Name     : H07R3.c
@@ -378,7 +378,7 @@ uint8_t ClearROtopology(void)
 
 /* --- H07R3 module initialization. 
 */
-void Module_Init(void)
+void Module_Peripheral_Init(void)
 {
 	/* Array ports */
   MX_USART1_UART_Init();
@@ -446,6 +446,9 @@ void RegisterModuleCLICommands(void)
 	FreeRTOS_CLIRegisterCommand(&demoCommandDefinition);
 	FreeRTOS_CLIRegisterCommand(&PlayFileCommandDefinition);
 }
+void ExecuteMonitor(void){
+
+	}
 
 /*-----------------------------------------------------------*/
 

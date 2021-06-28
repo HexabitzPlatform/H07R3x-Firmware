@@ -1,6 +1,5 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (9-2020-q2-update)
 ################################################################################
 
 -include ../makefile.init
@@ -35,12 +34,6 @@ endif
 
 -include ../makefile.defs
 
-OPTIONAL_TOOL_DEPS := \
-$(wildcard ../makefile.defs) \
-$(wildcard ../makefile.init) \
-$(wildcard ../makefile.targets) \
-
-
 BUILD_ARTIFACT_NAME := H07R3x
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX := 
@@ -65,17 +58,17 @@ all:
 main-build: H07R3x.elf secondary-outputs
 
 # Tool invocations
-H07R3x.elf: $(OBJS) $(USER_OBJS) D:\Hexabitz\for\ Release\Modules\ firmware\H07R3x\STM32cubeIDE\STM32F091RCTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+H07R3x.elf: $(OBJS) $(USER_OBJS) D:\Hexabitz\for\ Release\Modules\ firmware\H07R3x\STM32cubeIDE\STM32F091RCTX_FLASH.ld
 	arm-none-eabi-gcc -o "H07R3x.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"D:\Hexabitz\for Release\Modules firmware\H07R3x\STM32cubeIDE\STM32F091RCTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="H07R3x.map" -Wl,--gc-sections -static  -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+default.size.stdout: $(EXECUTABLES)
 	arm-none-eabi-size  $(EXECUTABLES)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-H07R3x.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+H07R3x.hex: $(EXECUTABLES)
 	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "H07R3x.hex"
 	@echo 'Finished building: $@'
 	@echo ' '

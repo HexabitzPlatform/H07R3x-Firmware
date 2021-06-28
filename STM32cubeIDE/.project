@@ -261,9 +261,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/User/project.h</locationURI>
 		</link>
 		<link>
-			<name>User/topology_1.h</name>
+			<name>User/topology.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/User/topology_1.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/User/topology.h</locationURI>
 		</link>
 		<link>
 			<name>User/wave.h</name>

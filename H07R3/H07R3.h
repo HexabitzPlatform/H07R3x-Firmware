@@ -1,10 +1,10 @@
 /*
-    BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
+    BitzOS (BOS) V0.2.5 - Copyright (C) 2017-2021 Hexabitz
     All rights reserved
 		
     File Name     : H07R3.c
     Description   : Header file for module H07R3.
-										Sound speaker (Knowles) with audio amp (TS4990IST) and headset port 
+					Sound speaker (Knowles) with audio amp (TS4990IST) and headset port
 */
 	
 /* Define to prevent recursive inclusion -------------------------------------*/
