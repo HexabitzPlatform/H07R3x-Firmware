@@ -446,9 +446,7 @@ void RegisterModuleCLICommands(void)
 	FreeRTOS_CLIRegisterCommand(&demoCommandDefinition);
 	FreeRTOS_CLIRegisterCommand(&PlayFileCommandDefinition);
 }
-void ExecuteMonitor(void){
 
-	}
 
 /*-----------------------------------------------------------*/
 
@@ -497,7 +495,7 @@ bool TS4990_Init(void)
 	if (audioDescQueue == NULL)
 		return false;
 	
-	if (xTaskCreate(AudioPlayTask, (const char *)"AudioPlayTask", (2 * configMINIMAL_STACK_SIZE), 
+	if (xTaskCreate(AudioPlayTask, (const char *)"AudioPlayTask", (configMINIMAL_STACK_SIZE),
 									NULL, osPriorityNormal-osPriorityIdle, &AudioPlayTaskHandle) != pdPASS)
 		return false;
 	

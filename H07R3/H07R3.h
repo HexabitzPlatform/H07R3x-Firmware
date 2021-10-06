@@ -284,7 +284,7 @@ extern void MX_USART5_UART_Init(void);
 extern uint32_t WAVE_SIZE ;
 extern uint32_t SAMPLERATE;
 
-#define AUDIO_DESC_QUE_SIZE								100
+#define AUDIO_DESC_QUE_SIZE								50
 
 typedef struct AudioDesc_s {
 	uint32_t *pBuffer;
