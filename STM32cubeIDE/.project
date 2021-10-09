@@ -276,11 +276,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/User/wave_hi_there.c</locationURI>
 		</link>
 		<link>
-			<name>User/wave_how_r_u.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/User/wave_how_r_u.c</locationURI>
-		</link>
-		<link>
 			<name>Thirdparty/CMSIS/Device</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
