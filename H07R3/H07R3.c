@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
+    BitzOS (BOS) V0.2.5 - Copyright (C) 2017-2021 Hexabitz
     All rights reserved
 
     File Name     : H07R3.c
@@ -378,7 +378,7 @@ uint8_t ClearROtopology(void)
 
 /* --- H07R3 module initialization. 
 */
-void Module_Init(void)
+void Module_Peripheral_Init(void)
 {
 	/* Array ports */
   MX_USART1_UART_Init();
@@ -447,6 +447,7 @@ void RegisterModuleCLICommands(void)
 	FreeRTOS_CLIRegisterCommand(&PlayFileCommandDefinition);
 }
 
+
 /*-----------------------------------------------------------*/
 
 /* --- Get the port for a given UART. 
@@ -494,7 +495,7 @@ bool TS4990_Init(void)
 	if (audioDescQueue == NULL)
 		return false;
 	
-	if (xTaskCreate(AudioPlayTask, (const char *)"AudioPlayTask", (2 * configMINIMAL_STACK_SIZE), 
+	if (xTaskCreate(AudioPlayTask, (const char *)"AudioPlayTask", (configMINIMAL_STACK_SIZE),
 									NULL, osPriorityNormal-osPriorityIdle, &AudioPlayTaskHandle) != pdPASS)
 		return false;
 	

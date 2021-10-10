@@ -1,10 +1,12 @@
 /*
-    BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
-    All rights reserved
-		
-    File Name     : H07R3_dma.c
-    Description   : Peripheral DMA setup source file.
-*/
+ BitzOS (BOS) V0.2.5 - Copyright (C) 2017-2021 Hexabitz
+ All rights reserved
+
+ File Name     : H07R3_dma.c
+ Description   : source file Contains Peripheral DMA setup .
+
+ */
+
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"

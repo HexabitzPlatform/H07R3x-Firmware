@@ -1,40 +1,11 @@
-/**
-  ******************************************************************************
-  * @file    H07R3_it.c
-  * @brief   Interrupt Service Routines.
-  ******************************************************************************
-  *
-  * COPYRIGHT(c) 2015 STMicroelectronics
-  *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
-  ******************************************************************************
-  */
-	
 /*
-		MODIFIED by Hexabitz for BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
-    All rights reserved
-*/
+ BitzOS (BOS) V0.2.5 - Copyright (C) 2017-2021 Hexabitz
+ All rights reserved
+
+ File Name     : H07R3_it.c
+ Description   :Interrupt Service Routines.
+
+ */
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
@@ -269,7 +240,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if (portStatus[GetPort(huart)] == FREE || portStatus[GetPort(huart)] == MSG)
 	{
 		// Circular buffer is full. Set a global persistant flag via BOS events and a temporary flag via portStatus.
-		BOS.overrun = GetPort(huart);
+		BOSMessaging.overrun = GetPort(huart);
 		portStatus[GetPort(huart)] = OVERRUN;
 		// Reset the circular RX buffer index
 		UARTRxBufIndex[GetPort(huart)-1] = 0;
@@ -293,6 +264,8 @@ void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName 
 	/* Run time stack overflow checking is performed if
 	configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
 	function is called if a stack overflow is detected. */
+	printf("Task %s stack overflow!n", pcTaskName);
+
 	taskDISABLE_INTERRUPTS();
 	for( ;; );
 }
@@ -300,6 +273,7 @@ void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName 
 
 void vApplicationMallocFailedHook( void )
 {
+
 	/* vApplicationMallocFailedHook() will only be called if
 	configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h.  It is a hook
 	function that will get called if a call to pvPortMalloc() fails.
@@ -310,6 +284,7 @@ void vApplicationMallocFailedHook( void )
 	FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
 	to query the size of free heap space that remains (although it does not
 	provide information on how the remaining heap might be fragmented). */
+
 	taskDISABLE_INTERRUPTS();
 	for( ;; );
 }
