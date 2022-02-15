@@ -45,16 +45,16 @@
 									<listOptionValue builtIn="false" value="H07R3"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.1193085222" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../Thirdparty/CMSIS/Include"/>
-									<listOptionValue builtIn="false" value="../../Thirdparty/CMSIS/Device/ST/STM32F0xx/Include"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/STM32F0xx_HAL_Driver/Inc/Legacy"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/STM32F0xx_HAL_Driver/Inc"/>
-									<listOptionValue builtIn="false" value="../../Thirdparty/Middleware/FreeRTOS/Source/include"/>
-									<listOptionValue builtIn="false" value="../../Thirdparty/Middleware/FreeRTOS/Source/portable/GCC/ARM_CM0"/>
-									<listOptionValue builtIn="false" value="../../Thirdparty/Middleware/FreeRTOS/Source/CMSIS_RTOS"/>
 									<listOptionValue builtIn="false" value="../../H07R3"/>
 									<listOptionValue builtIn="false" value="../../BOS"/>
 									<listOptionValue builtIn="false" value="../../User"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/CMSIS/STM32F0xx/Include"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/CMSIS/STM32F0xx/Device/ST/STM32F0xx/Include"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/Middleware/STM32F0xx/FreeRTOS/Source/include"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/Middleware/STM32F0xx/FreeRTOS/Source/portable/GCC/ARM_CM0"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/Middleware/STM32F0xx/FreeRTOS/Source/CMSIS_RTOS"/>
 								</option>
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.languagestandard.1829047102" name="Language standard" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.languagestandard" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.languagestandard.value.isoc99" valueType="enumerated"/>
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.warnings.all.1125690715" name="Enable all warnings about questionable constructions (-Wall)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.warnings.all" useByScannerDiscovery="false" value="false" valueType="boolean"/>
