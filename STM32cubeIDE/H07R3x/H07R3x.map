@@ -3969,168 +3969,168 @@ LOAD c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
 .iplt           0x00000000080189a4        0x0
  .iplt          0x00000000080189a4        0x0 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
 
-.rodata         0x00000000080189a8     0x5634
+.rodata         0x00000000080189a8     0x563c
                 0x00000000080189a8                . = ALIGN (0x4)
  *(.rodata)
- .rodata        0x00000000080189a8       0xfb BOS\BOS.o
+ .rodata        0x00000000080189a8      0x101 BOS\BOS.o
                 0x00000000080189f5                modulePNstring
- *fill*         0x0000000008018aa3        0x1 
- .rodata        0x0000000008018aa4      0x234 BOS\BOS_CLIcommands.o
-                0x0000000008018ab4                mathStr
-                0x0000000008018be8                setBaudrateCommandDefinition
- .rodata        0x0000000008018cd8      0x219 H07R3\H07R3.o
-                0x0000000008018cf8                demoCommandDefinition
-                0x0000000008018d18                sineDigital
-                0x0000000008018d2c                waveModeString
-                0x0000000008018d31                tuneModeString
-                0x0000000008018d36                sineModeString
-                0x0000000008018d3c                notesFreq
-                0x0000000008018eec                fileModeString
- *fill*         0x0000000008018ef1        0x3 
- .rodata        0x0000000008018ef4       0x14 H07R3\H07R3_uart.o
- .rodata        0x0000000008018f08       0x10 Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\FreeRTOS_CLI.o
- .rodata        0x0000000008018f18       0x18 Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\tasks.o
- .rodata        0x0000000008018f30       0x30 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rcc.o
-                0x0000000008018f50                aAPBAHBPrescTable
- .rodata        0x0000000008018f60        0x4 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_uart.o
- .rodata        0x0000000008018f64        0xc User\main.o
-                0x0000000008018f64                waveRate
-                0x0000000008018f68                waveResolution
-                0x0000000008018f6c                waveLength
- .rodata        0x0000000008018f70     0x2344 User\wave_hi_there.o
-                0x0000000008018f70                waveByteCode_HiThere
- .rodata        0x000000000801b2b4       0x80 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(divsf3.o)
- .rodata        0x000000000801b334       0x40 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(mulsf3.o)
- .rodata        0x000000000801b374       0x40 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(divdf3.o)
- .rodata        0x000000000801b3b4       0x40 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(muldf3.o)
+ *fill*         0x0000000008018aa9        0x3 
+ .rodata        0x0000000008018aac      0x234 BOS\BOS_CLIcommands.o
+                0x0000000008018abc                mathStr
+                0x0000000008018bf0                setBaudrateCommandDefinition
+ .rodata        0x0000000008018ce0      0x219 H07R3\H07R3.o
+                0x0000000008018d00                demoCommandDefinition
+                0x0000000008018d20                sineDigital
+                0x0000000008018d34                waveModeString
+                0x0000000008018d39                tuneModeString
+                0x0000000008018d3e                sineModeString
+                0x0000000008018d44                notesFreq
+                0x0000000008018ef4                fileModeString
+ *fill*         0x0000000008018ef9        0x3 
+ .rodata        0x0000000008018efc       0x14 H07R3\H07R3_uart.o
+ .rodata        0x0000000008018f10       0x10 Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\FreeRTOS_CLI.o
+ .rodata        0x0000000008018f20       0x18 Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\tasks.o
+ .rodata        0x0000000008018f38       0x30 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rcc.o
+                0x0000000008018f58                aAPBAHBPrescTable
+ .rodata        0x0000000008018f68        0x4 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_uart.o
+ .rodata        0x0000000008018f6c        0xc User\main.o
+                0x0000000008018f6c                waveRate
+                0x0000000008018f70                waveResolution
+                0x0000000008018f74                waveLength
+ .rodata        0x0000000008018f78     0x2344 User\wave_hi_there.o
+                0x0000000008018f78                waveByteCode_HiThere
+ .rodata        0x000000000801b2bc       0x80 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(divsf3.o)
+ .rodata        0x000000000801b33c       0x40 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(mulsf3.o)
+ .rodata        0x000000000801b37c       0x40 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(divdf3.o)
+ .rodata        0x000000000801b3bc       0x40 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(muldf3.o)
  *(.rodata*)
  .rodata.str1.1
-                0x000000000801b3f4      0x6cc BOS\BOS.o
+                0x000000000801b3fc      0x6cc BOS\BOS.o
                                         0x6e3 (size before relaxing)
  .rodata.str1.1
-                0x000000000801bac0      0x48f BOS\BOS_CLI.o
+                0x000000000801bac8      0x48f BOS\BOS_CLI.o
                                         0x4ac (size before relaxing)
  .rodata.str1.1
-                0x000000000801bf4f     0x183c BOS\BOS_CLIcommands.o
+                0x000000000801bf57     0x183c BOS\BOS_CLIcommands.o
                                        0x1870 (size before relaxing)
  .rodata.str1.1
-                0x000000000801d78b       0x5b BOS\BOS_freertos.o
+                0x000000000801d793       0x5b BOS\BOS_freertos.o
  .rodata.str1.1
-                0x000000000801d7e6        0xc BOS\BOS_messaging.o
+                0x000000000801d7ee        0xc BOS\BOS_messaging.o
  .rodata.str1.1
-                0x000000000801d7f2       0x38 BOS\BOS_msgparser.o
+                0x000000000801d7fa       0x38 BOS\BOS_msgparser.o
  .rodata.str1.1
-                0x000000000801d7f2      0x381 H07R3\H07R3.o
+                0x000000000801d7fa      0x381 H07R3\H07R3.o
                                         0x388 (size before relaxing)
  .rodata.str1.1
-                0x000000000801db73        0xb H07R3\H07R3_inputs.o
+                0x000000000801db7b        0xb H07R3\H07R3_inputs.o
  .rodata.str1.1
-                0x000000000801db73       0x19 H07R3\H07R3_it.o
+                0x000000000801db7b       0x19 H07R3\H07R3_it.o
  .rodata.str1.1
-                0x000000000801db8c        0x9 H07R3\H07R3_rtc.o
+                0x000000000801db94        0x9 H07R3\H07R3_rtc.o
                                          0x15 (size before relaxing)
  .rodata.str1.1
-                0x000000000801db95      0x128 Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\FreeRTOS_CLI.o
+                0x000000000801db9d      0x128 Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\FreeRTOS_CLI.o
                                         0x12f (size before relaxing)
  .rodata.str1.1
-                0x000000000801dcbd       0x2c Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\tasks.o
+                0x000000000801dcc5       0x2c Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\tasks.o
  .rodata.str1.1
-                0x000000000801dce9        0xd Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\timers.o
+                0x000000000801dcf1        0xd Thirdparty\Middleware\STM32F0xx\FreeRTOS\Source\timers.o
  .rodata.str1.1
-                0x000000000801dcf6        0x8 User\main.o
- *fill*         0x000000000801dcfe        0x2 
+                0x000000000801dcfe        0x8 User\main.o
+ *fill*         0x000000000801dd06        0x2 
  .rodata._global_impure_ptr
-                0x000000000801dd00        0x4 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-impure.o)
-                0x000000000801dd00                _global_impure_ptr
+                0x000000000801dd08        0x4 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-impure.o)
+                0x000000000801dd08                _global_impure_ptr
  .rodata._setlocale_r.str1.1
-                0x000000000801dd04        0x8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-locale.o)
+                0x000000000801dd0c        0x8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-locale.o)
                                           0x9 (size before relaxing)
  .rodata.str1.1
-                0x000000000801dd0c        0x8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-locale.o)
+                0x000000000801dd14        0x8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-locale.o)
                                           0x2 (size before relaxing)
  .rodata._strtod_l.str1.1
-                0x000000000801dd0c        0x8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-strtod.o)
+                0x000000000801dd14        0x8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-strtod.o)
                                           0xc (size before relaxing)
  .rodata.fpi.6173
-                0x000000000801dd0c       0x14 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-strtod.o)
+                0x000000000801dd14       0x14 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-strtod.o)
  .rodata.fpinan.6209
-                0x000000000801dd20       0x14 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-strtod.o)
- *fill*         0x000000000801dd34        0x4 
+                0x000000000801dd28       0x14 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-strtod.o)
+ *fill*         0x000000000801dd3c        0x4 
  .rodata.tinytens
-                0x000000000801dd38       0x28 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-strtod.o)
+                0x000000000801dd40       0x28 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-strtod.o)
  .rodata._svfprintf_r.str1.1
-                0x000000000801dd60       0x32 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-svfprintf.o)
+                0x000000000801dd68       0x32 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-svfprintf.o)
                                          0x34 (size before relaxing)
  .rodata.blanks.7315
-                0x000000000801dd92       0x10 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-svfprintf.o)
+                0x000000000801dd9a       0x10 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-svfprintf.o)
  .rodata.zeroes.7316
-                0x000000000801dda2       0x10 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-svfprintf.o)
+                0x000000000801ddaa       0x10 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-svfprintf.o)
  .rodata._vfprintf_r.str1.1
-                0x000000000801ddb2       0x34 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-vfprintf.o)
+                0x000000000801ddba       0x34 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-vfprintf.o)
  .rodata.blanks.7330
-                0x000000000801ddb2       0x10 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-vfprintf.o)
+                0x000000000801ddba       0x10 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-vfprintf.o)
  .rodata.zeroes.7331
-                0x000000000801ddc2       0x10 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-vfprintf.o)
+                0x000000000801ddca       0x10 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-vfprintf.o)
  .rodata._ctype_
-                0x000000000801ddd2      0x101 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-ctype_.o)
-                0x000000000801ddd2                _ctype_
+                0x000000000801ddda      0x101 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-ctype_.o)
+                0x000000000801ddda                _ctype_
  .rodata._dtoa_r.str1.1
-                0x000000000801ded3        0xd c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-dtoa.o)
+                0x000000000801dedb        0xd c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-dtoa.o)
                                           0xf (size before relaxing)
  .rodata.__mprec_bigtens
-                0x000000000801dee0       0x28 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-mprec.o)
-                0x000000000801dee0                __mprec_bigtens
+                0x000000000801dee8       0x28 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-mprec.o)
+                0x000000000801dee8                __mprec_bigtens
  .rodata.__mprec_tens
-                0x000000000801df08       0xc8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-mprec.o)
-                0x000000000801df08                __mprec_tens
+                0x000000000801df10       0xc8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-mprec.o)
+                0x000000000801df10                __mprec_tens
  .rodata.p05.6093
-                0x000000000801dfd0        0xc c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-mprec.o)
-                0x000000000801dfdc                . = ALIGN (0x4)
+                0x000000000801dfd8        0xc c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-mprec.o)
+                0x000000000801dfe4                . = ALIGN (0x4)
 
-.ARM.extab      0x000000000801dfdc        0x0
-                0x000000000801dfdc                . = ALIGN (0x4)
+.ARM.extab      0x000000000801dfe4        0x0
+                0x000000000801dfe4                . = ALIGN (0x4)
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x000000000801dfdc                . = ALIGN (0x4)
+                0x000000000801dfe4                . = ALIGN (0x4)
 
-.ARM            0x000000000801dfdc        0x8
-                0x000000000801dfdc                . = ALIGN (0x4)
-                0x000000000801dfdc                __exidx_start = .
+.ARM            0x000000000801dfe4        0x8
+                0x000000000801dfe4                . = ALIGN (0x4)
+                0x000000000801dfe4                __exidx_start = .
  *(.ARM.exidx*)
- .ARM.exidx     0x000000000801dfdc        0x8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(_udivmoddi4.o)
-                0x000000000801dfe4                __exidx_end = .
-                0x000000000801dfe4                . = ALIGN (0x4)
+ .ARM.exidx     0x000000000801dfe4        0x8 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m\libgcc.a(_udivmoddi4.o)
+                0x000000000801dfec                __exidx_end = .
+                0x000000000801dfec                . = ALIGN (0x4)
 
-.rel.dyn        0x000000000801dfe4        0x0
- .rel.iplt      0x000000000801dfe4        0x0 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
+.rel.dyn        0x000000000801dfec        0x0
+ .rel.iplt      0x000000000801dfec        0x0 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
 
-.preinit_array  0x000000000801dfe4        0x0
-                0x000000000801dfe4                . = ALIGN (0x4)
-                0x000000000801dfe4                PROVIDE (__preinit_array_start = .)
+.preinit_array  0x000000000801dfec        0x0
+                0x000000000801dfec                . = ALIGN (0x4)
+                0x000000000801dfec                PROVIDE (__preinit_array_start = .)
  *(.preinit_array*)
-                0x000000000801dfe4                PROVIDE (__preinit_array_end = .)
-                0x000000000801dfe4                . = ALIGN (0x4)
+                0x000000000801dfec                PROVIDE (__preinit_array_end = .)
+                0x000000000801dfec                . = ALIGN (0x4)
 
-.init_array     0x000000000801dfe4        0x8
-                0x000000000801dfe4                . = ALIGN (0x4)
-                0x000000000801dfe4                PROVIDE (__init_array_start = .)
+.init_array     0x000000000801dfec        0x8
+                0x000000000801dfec                . = ALIGN (0x4)
+                0x000000000801dfec                PROVIDE (__init_array_start = .)
  *(SORT_BY_NAME(.init_array.*))
  .init_array.00000
-                0x000000000801dfe4        0x4 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-__call_atexit.o)
+                0x000000000801dfec        0x4 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc.a(lib_a-__call_atexit.o)
  *(.init_array*)
- .init_array    0x000000000801dfe8        0x4 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
-                0x000000000801dfec                PROVIDE (__init_array_end = .)
-                0x000000000801dfec                . = ALIGN (0x4)
+ .init_array    0x000000000801dff0        0x4 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
+                0x000000000801dff4                PROVIDE (__init_array_end = .)
+                0x000000000801dff4                . = ALIGN (0x4)
 
-.fini_array     0x000000000801dfec        0x4
-                0x000000000801dfec                . = ALIGN (0x4)
-                0x000000000801dfec                PROVIDE (__fini_array_start = .)
+.fini_array     0x000000000801dff4        0x4
+                0x000000000801dff4                . = ALIGN (0x4)
+                0x000000000801dff4                PROVIDE (__fini_array_start = .)
  *(SORT_BY_NAME(.fini_array.*))
  *(.fini_array*)
- .fini_array    0x000000000801dfec        0x4 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
-                0x000000000801dff0                PROVIDE (__fini_array_end = .)
-                0x000000000801dff0                . = ALIGN (0x4)
+ .fini_array    0x000000000801dff4        0x4 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
+                0x000000000801dff8                PROVIDE (__fini_array_end = .)
+                0x000000000801dff8                . = ALIGN (0x4)
 
-.mySection      0x0000000020000000        0x8 load address 0x000000000801dff0
+.mySection      0x0000000020000000        0x8 load address 0x000000000801dff8
                 0x0000000020000000                . = ALIGN (0x4)
                 0x0000000020000000                _ssection = .
  *(.mySection)
@@ -4138,9 +4138,9 @@ LOAD c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x0000000020000008                . = ALIGN (0x4)
  *fill*         0x0000000020000006        0x2 
                 0x0000000020000008                _esection = .
-                0x000000000801dff8                _sidata = LOADADDR (.data)
+                0x000000000801e000                _sidata = LOADADDR (.data)
 
-.data           0x0000000020000008      0xa78 load address 0x000000000801dff8
+.data           0x0000000020000008      0xa78 load address 0x000000000801e000
                 0x0000000020000008                . = ALIGN (0x4)
                 0x0000000020000008                _sdata = .
  *(.data)
@@ -4193,11 +4193,11 @@ LOAD c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x0000000020000a80                . = ALIGN (0x4)
                 0x0000000020000a80                _edata = .
 
-.igot.plt       0x0000000020000a80        0x0 load address 0x000000000801ea70
+.igot.plt       0x0000000020000a80        0x0 load address 0x000000000801ea78
  .igot.plt      0x0000000020000a80        0x0 c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
                 0x0000000020000a80                . = ALIGN (0x4)
 
-.bss            0x0000000020000a80     0x6860 load address 0x000000000801ea70
+.bss            0x0000000020000a80     0x6860 load address 0x000000000801ea78
                 0x0000000020000a80                _sbss = .
                 0x0000000020000a80                __bss_start__ = _sbss
  *(.bss)
@@ -4405,7 +4405,7 @@ LOAD c:/st/stm32cubeide_1.5.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x00000000200072e0                __bss_end__ = _ebss
 
 ._user_heap_stack
-                0x00000000200072e0      0x600 load address 0x000000000801ea70
+                0x00000000200072e0      0x600 load address 0x000000000801ea78
                 0x00000000200072e0                . = ALIGN (0x8)
                 0x00000000200072e0                PROVIDE (end = .)
                 [!provide]                        PROVIDE (_end = .)
