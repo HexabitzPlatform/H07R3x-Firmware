@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.2.5 - Copyright (C) 2017-2021 Hexabitz
+    BitzOS (BOS) V0.2.6 - Copyright (C) 2017-2022 Hexabitz
     All rights reserved
 		
     File Name     : H07R3.c
@@ -18,7 +18,8 @@
 #include "H07R3_gpio.h"	
 #include "H07R3_dma.h"		
 #include "H07R3_dac.h"	
-
+#include "H07R3_inputs.h"
+#include "H07R3_eeprom.h"
 /* Exported definitions -------------------------------------------------------*/
 
 #define	modulePN		_H07R3
@@ -320,7 +321,8 @@ bool PlayWave(char *name, int32_t repeats, uint16_t delayInMs);
 WAVE_FILE_STATE PlayWaveFromModule(uint8_t H1BR6x_ID, uint32_t timeout);
 WAVE_FILE_STATE PlayWaveFromPort(uint8_t port, uint32_t length, uint8_t dataPointSize, uint32_t timeout);
 WAVE_FILE_STATE ScanWaveFile(char* Wave_Full_Name , uint8_t H1BR6x_ID, uint32_t timeout);
-
+void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
+void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 /* -----------------------------------------------------------------------
 	|															Commands																 	|
    ----------------------------------------------------------------------- 

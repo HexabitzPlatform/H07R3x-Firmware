@@ -1,5 +1,5 @@
 /*
- BitzOS (BOS) V0.2.5 - Copyright (C) 2017-2021 Hexabitz
+ BitzOS (BOS) V0.2.6 - Copyright (C) 2017-2022 Hexabitz
  All rights reserved
 
   File Name          : H07R3_dac.h
@@ -24,7 +24,7 @@ extern DAC_HandleTypeDef hdac;
 extern TIM_HandleTypeDef htim2;
 	 
 extern void MX_DAC_Init(void);
-	 
+
 
 
 #ifdef __cplusplus
