@@ -20,7 +20,7 @@ extern TaskHandle_t UserTaskHandle;
 
 /* External function prototypes ----------------------------------------------*/
 
-
+extern TaskHandle_t xCommandConsoleTaskHandle; // CLI Task handler.
 
 
 /******************************************************************************/
