@@ -10,6 +10,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 
+uint8_t temp_length[NumOfPorts] = {0};
+uint8_t temp_index[NumOfPorts] = {0};
 
 /* External variables --------------------------------------------------------*/
 extern uint8_t UARTRxBuf[NumOfPorts][MSG_RX_BUF_SIZE];
