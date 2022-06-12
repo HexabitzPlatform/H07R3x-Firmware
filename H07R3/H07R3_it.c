@@ -10,7 +10,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 
-
+uint8_t* error_restart_message = "Restarting...\r\n";
 /* External variables --------------------------------------------------------*/
 extern uint8_t UARTRxBuf[NumOfPorts][MSG_RX_BUF_SIZE];
 //extern uint8_t UARTTxBuf[3][MSG_TX_BUF_SIZE];
@@ -44,6 +44,10 @@ void SysTick_Handler(void)
 void HardFault_Handler(void)
 {
 	/* Loop here */
+	uint8_t* error_message = "HardFault Error\r\n";
+	writePxMutex(PcPort, (char*) error_message, 17, 0xff, 0xff);
+	writePxMutex(PcPort, (char*) error_restart_message, 15, 0xff, 0xff);
+	NVIC_SystemReset();
 	for(;;) {};  
 }
 
@@ -256,37 +260,38 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
-{
-	( void ) pcTaskName;
-	( void ) pxTask;
-
-	/* Run time stack overflow checking is performed if
-	configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
-	function is called if a stack overflow is detected. */
-	printf("Task %s stack overflow!n", pcTaskName);
-
-	taskDISABLE_INTERRUPTS();
-	for( ;; );
+/* Run time stack overflow checking is performed if
+ configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
+ function is called if a stack overflow is detected. */
+void vApplicationStackOverflowHook( xTaskHandle pxTask,signed char *pcTaskName){
+	(void )pcTaskName;
+	(void )pxTask;
+	uint8_t* error_message = "Stack Overflow\r\n";
+	writePxMutex(PcPort, (char*) error_message, 16, 0xff, 0xff);
+	writePxMutex(PcPort, (char*) error_restart_message, 15, 0xff, 0xff);
+	NVIC_SystemReset();
+//	taskDISABLE_INTERRUPTS();
+	for(;;);
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationMallocFailedHook( void )
-{
-
-	/* vApplicationMallocFailedHook() will only be called if
-	configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h.  It is a hook
-	function that will get called if a call to pvPortMalloc() fails.
-	pvPortMalloc() is called internally by the kernel whenever a task, queue,
-	timer or semaphore is created.  It is also called by various parts of the
-	demo application.  If heap_1.c or heap_2.c are used, then the size of the
-	heap available to pvPortMalloc() is defined by configTOTAL_HEAP_SIZE in
-	FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
-	to query the size of free heap space that remains (although it does not
-	provide information on how the remaining heap might be fragmented). */
-
-	taskDISABLE_INTERRUPTS();
-	for( ;; );
+/* vApplicationMallocFailedHook() will only be called if
+ configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h.  It is a hook
+ function that will get called if a call to pvPortMalloc() fails.
+ pvPortMalloc() is called internally by the kernel whenever a task, queue,
+ timer or semaphore is created.  It is also called by various parts of the
+ demo application.  If heap_1.c or heap_2.c are used, then the size of the
+ heap available to pvPortMalloc() is defined by configTOTAL_HEAP_SIZE in
+ FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
+ to query the size of free heap space that remains (although it does not
+ provide information on how the remaining heap might be fragmented). */
+void vApplicationMallocFailedHook(void){
+	uint8_t* error_message = "Heap size exceeded\r\n";
+	writePxMutex(PcPort, (char*) error_message, 20, 0xff, 0xff);
+	writePxMutex(PcPort, (char*) error_restart_message, 15, 0xff, 0xff);
+	NVIC_SystemReset();
+//	taskDISABLE_INTERRUPTS();
+	for(;;);
 }
 /*-----------------------------------------------------------*/
 
