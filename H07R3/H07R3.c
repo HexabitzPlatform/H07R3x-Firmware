@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.2.6 - Copyright (C) 2017-2022 Hexabitz
+    BitzOS (BOS) V0.2.7 - Copyright (C) 2017-2022 Hexabitz
     All rights reserved
 
     File Name     : H07R3.c
@@ -460,6 +460,7 @@ void Module_Peripheral_Init(void)
 }
 /*-----------------------------------------------------------*/
 
+
 /* --- H07R3 message processing task. 
 */
 Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst, uint8_t shift)
@@ -471,13 +472,13 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 		case CODE_H07R3_PLAY_SINE:
 		{
 			float freq = 0.0;
-			freq = (float)(( (uint32_t) cMessage[port-1][shift] << 24 ) + ( (uint32_t) cMessage[port-1][shift+1] << 16 ) + ( (uint32_t) cMessage[port-1][shift+2] << 8 ) + cMessage[port-1][shift+3]);
+			freq = (float)(( (uint32_t) cMessage[port-1][shift]  ) + ( (uint32_t) cMessage[port-1][shift+1] << 8 ) + ( (uint32_t) cMessage[port-1][shift+2] << 16 ) + ( (uint32_t)cMessage[port-1][shift+3] <<24));
 				PlaySine(freq, cMessage[port-1][shift+4], (float) cMessage[port-1][shift+5] / 16.0f); // time division 16
 			break;
 		}
 		case CODE_H07R3_PLAY_WAVE:
 		{
-			temp16 = (((uint16_t)cMessage[port-1][shift+1])<<8) + (uint16_t)cMessage[port-1][shift+2];
+			temp16 = (((uint16_t)cMessage[port-1][shift+1])) + ((uint16_t)cMessage[port-1][shift+2]<<8);
 			cMessage[port-1][messageLength[port-1]] = 0; 	// Terminate the wave name string
 			PlayWave((char *)&cMessage[port-1][shift+3], cMessage[port-1][shift], temp16);//1st parameter repeat time ,2nd & 3rd parameter for Delay time , and for WAV name for the latest parameters
 			break;
@@ -487,10 +488,7 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 			PlaySine(notesFreq[cMessage[port-1][shift]][cMessage[port-1][shift+1]], MusicNotesNumOfSamples, (float) cMessage[port-1][shift+2] / 16.0f);// time division 16
 		 	break;
 		}
-		case CODE_H07R3_SCAN_WAVE_RESPONSE:
-				WAVE_SIZE = (uint32_t)(cMessage[port-1][shift]<<24) + (uint32_t) (cMessage[port-1][shift+1]<<16) + (uint32_t) (cMessage[port-1][shift+2]<<8) + (uint32_t) cMessage[port-1][shift+3];
-				SAMPLERATE = (uint32_t) (cMessage[port-1][shift+4]<<24) + (uint32_t) (cMessage[port-1][shift+5]<<16) + (uint32_t) (cMessage[port-1][shift+6]<<8) +(uint32_t)  cMessage[port-1][shift+7];
-		break;
+
 		default:
 			result = H07R3_ERR_UnknownMessage;
 			break;
